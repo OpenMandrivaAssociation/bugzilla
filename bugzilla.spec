@@ -1,0 +1,247 @@
+%define name	bugzilla
+%define version 2.22.2
+%define release %mkrel 1
+
+%define _provides_exceptions perl(.*)
+%define _requires_exceptions perl(\\(CGI.pl\\|XML::Parser\\|Net::LDAP\\|Bugzilla.*\\|DBI::db\\|DBD::Pg\\))
+
+Name:		%{name}
+Version:	%{version}
+Release:	%{release}
+Summary:	A bug tracking system developed by mozilla.org
+License:	MPL
+Group:		Networking/WWW
+URL:		http://www.bugzilla.org
+Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.bz2
+Patch0:		%{name}-2.22.2.fhs.patch
+Patch1:		%{name}-2.20.install.patch
+Requires:	perl-AppConfig >= 1.52
+Requires:	perl-DBI >= 1.38
+Requires:	perl-CGI >= 2.93
+Requires:	perl-MailTools >= 1.65
+Requires:	perl-Template-Toolkit >= 2.08
+Requires:	apache
+Requires:	sendmail-command
+# webapp macros and scriptlets
+Requires(post):		rpm-helper >= 0.16
+Requires(postun):	rpm-helper >= 0.16
+BuildRequires:	rpm-helper >= 0.16
+BuildRequires:	rpm-mandriva-setup >= 1.23
+BuildArch:	noarch
+BuildRoot:	%{_tmppath}/%{name}-%{version}
+
+%description
+Bugzilla is one example of a class of programs called "Defect Tracking
+Systems", or, more commonly, "Bug-Tracking Systems". Defect Tracking Systems
+allow individual or groups of developers to keep track of outstanding bugs
+in their product effectively.
+
+%package contrib
+Summary:	Additional tools for %{name}
+Group:		Networking/WWW
+
+%description contrib
+This package contains additional tools for %{name}.
+
+%prep
+%setup -q
+%patch0 -p1
+%patch1 -p1
+find . -name CVS -o -name .cvsignore | xargs rm -rf
+
+# fix perms
+chmod -R go=u-w .
+chmod 644 Bugzilla/Bug.pm
+chmod 644 template/en/default/admin/keywords/*
+chmod 644 contrib/gnatsparse/README
+chmod 755 docs/makedocs.pl
+
+# fix paths
+find . -type f | xargs perl -pi -e "s|/usr/local/bin|%{_bindir}|g"
+
+# fix contrib documentation files names
+(cd contrib/bugzilla-submit && mv README README.bugzilla-submit)
+(cd contrib/gnatsparse && mv README README.gnatsparse)
+
+%build
+
+%install
+rm -rf %{buildroot}
+
+install -d -m 755 %{buildroot}%{_var}/www/%{name}
+install -m 755 *.cgi %{buildroot}%{_var}/www/%{name}
+cp -pr js skins images *.js robots.txt %{buildroot}%{_var}/www/%{name}
+
+install -d -m 755 %{buildroot}%{_datadir}/%{name}
+install -d -m 755 %{buildroot}%{_datadir}/%{name}/lib
+install -d -m 755 %{buildroot}%{_datadir}/%{name}/bin
+cp -pr template %{buildroot}%{_datadir}/%{name}
+cp -pr Bugzilla %{buildroot}%{_datadir}/%{name}/lib
+install -m 644 Bugzilla.pm \
+	globals.pl \
+	contrib/BugzillaEmail.pm \
+	%{buildroot}%{_datadir}/%{name}/lib
+install -m 755 collectstats.pl \
+	testserver.pl \
+	checksetup.pl \
+	importxml.pl \
+	whineatnews.pl \
+	whine.pl \
+	contrib/bug_email.pl \
+	contrib/bugzilla_email_append.pl \
+	contrib/bugzilla_ldapsync.rb \
+	contrib/bzdbcopy.pl \
+	contrib/cvs-update.pl \
+	contrib/gnats2bz.pl \
+	contrib/jb2bz.py \
+	contrib/merge-users.pl \
+	contrib/mysqld-watcher.pl \
+	contrib/sendbugmail.pl \
+	contrib/sendunsentbugmail.pl \
+	contrib/syncLDAP.pl \
+	contrib/yp_nomail.sh \
+	contrib/bugzilla-submit/bugzilla-submit \
+	contrib/cmdline/buglist \
+	contrib/cmdline/bugs \
+	contrib/gnatsparse/magic.py \
+	contrib/gnatsparse/gnatsparse.py \
+	contrib/gnatsparse/specialuu.py \
+	%{buildroot}%{_datadir}/%{name}/bin
+cp -p bugzilla.dtd %{buildroot}%{_datadir}/%{name}
+
+install -d -m 755 %{buildroot}%{_localstatedir}/%{name}
+install -d -m 755 %{buildroot}%{_sysconfdir}/%{name}
+install -m 644 contrib/cmdline/query.conf %{buildroot}%{_sysconfdir}/%{name}
+
+install -d -m 755 %{buildroot}%{_sysconfdir}/%{name}
+
+# apache configuration
+install -d -m 755 %{buildroot}%{_webappconfdir}
+cat > %{buildroot}%{_webappconfdir}/%{name}.conf <<EOF
+# Bugzilla Apache configuration
+Alias /%{name} %{_var}/www/%{name}
+Alias /bugzilla/data %{_localstatedir}/bugzilla/
+
+<Directory %{_var}/www/%{name}>
+    Options ExecCGI
+    DirectoryIndex index.cgi
+    Allow from all
+</Directory>
+
+# The duplicates.rdf must be accessible, as it is used by
+# duplicates.xul
+<Directory %{_localstatedir}/bugzilla>
+    <Files duplicates.rdf>
+	Allow from all
+    </Files>
+</Directory>
+
+# The dot files must be accessible to the public webdot server
+# The png files locally created locally must be accessible
+<Directory %{_localstatedir}/bugzilla/webdot>
+    <FilesMatch \.dot$>
+	Allow from research.att.com
+    </FilesMatch>
+
+    <FilesMatch \.png$>
+	Allow from all
+    </FilesMatch>
+</Directory>
+EOF
+
+# cron task
+install -d -m 755 %{buildroot}%{_sysconfdir}/cron.d
+cat > %{buildroot}%{_sysconfdir}/cron.d/%{name} <<EOF
+0 0 * * *     apache     %{_datadir}/%{name}/bin/collectstats.pl > /dev/null 2>&1
+0 0 * * *     apache     %{_datadir}/%{name}/bin/whineatnews.pl > /dev/null 2>&1
+*/15 * * * *     apache     %{_datadir}/%{name}/bin/whine.pl > /dev/null 2>&1
+EOF
+
+cat > README.mdv <<EOF
+Mandriva RPM specific notes
+
+setup
+-----
+The setup used here differs from default one, to achieve better FHS compliance.
+- the files accessibles from the web are in %{_var}/www/%{name}
+- the files non accessibles from the web are in %{_datadir}/%{name}
+- the configuration file will be generated in %{_sysconfdir}/%{name}
+
+post-installation
+-----------------
+You have to create the MySQL database, and run %{_datadir}/%{name}/bin/checksetup.pl
+
+Additional useful packages
+--------------------------
+- perl-GD, perl-GDGraph, perl-GD-TextUtil and perl-Chart for graphical reports
+- perl-XML-Parser for importing XML bugs
+- perl-Net-LDAP for LDAP authentication
+- perl-PatchReader, cvs, diffutils and patchutils for patch viewer
+- graphviz for graphical view of dependency relationships
+- a MySQL database, either locale or remote
+EOF
+
+%clean
+rm -rf %{buildroot}
+
+%post
+%_post_webapp
+
+%postun
+%_postun_webapp
+
+%files
+%defattr(-,root,root)
+%doc QUICKSTART README README.mdv UPGRADING UPGRADING-pre-2.8 docs
+%config(noreplace) %{_webappconfdir}/%{name}.conf
+%config(noreplace) %{_sysconfdir}/cron.d/%{name}
+%{_var}/www/%{name}
+%{_datadir}/%{name}
+%{_sysconfdir}/%{name}
+%attr(-,apache,apache) %{_localstatedir}/%{name}
+%exclude %{_datadir}/%{name}/lib/BugzillaEmail.pm
+%exclude %{_datadir}/%{name}/bin/bug_email.pl
+%exclude %{_datadir}/%{name}/bin/bugzilla_email_append.pl
+%exclude %{_datadir}/%{name}/bin/bugzilla_ldapsync.rb
+%exclude %{_datadir}/%{name}/bin/cvs-update.pl
+%exclude %{_datadir}/%{name}/bin/gnats2bz.pl
+%exclude %{_datadir}/%{name}/bin/jb2bz.py
+%exclude %{_datadir}/%{name}/bin/mysqld-watcher.pl
+%exclude %{_datadir}/%{name}/bin/sendbugmail.pl
+%exclude %{_datadir}/%{name}/bin/sendunsentbugmail.pl
+%exclude %{_datadir}/%{name}/bin/syncLDAP.pl
+%exclude %{_datadir}/%{name}/bin/yp_nomail.sh
+%exclude %{_datadir}/%{name}/bin/bugzilla-submit
+%exclude %{_datadir}/%{name}/bin/buglist
+%exclude %{_datadir}/%{name}/bin/bugs
+%exclude %{_datadir}/%{name}/bin/magic.py
+%exclude %{_datadir}/%{name}/bin/gnatsparse.py
+%exclude %{_datadir}/%{name}/bin/specialuu.py
+%exclude %{_sysconfdir}/%{name}/query.conf
+
+%files contrib
+%defattr(-,root,root)
+%doc contrib/README contrib/README.Mailif
+%doc contrib/bugzilla-submit/README.bugzilla-submit
+%doc contrib/gnatsparse/README.gnatsparse
+%{_datadir}/%{name}/lib/BugzillaEmail.pm
+%{_datadir}/%{name}/bin/bug_email.pl
+%{_datadir}/%{name}/bin/bugzilla_email_append.pl
+%{_datadir}/%{name}/bin/bugzilla_ldapsync.rb
+%{_datadir}/%{name}/bin/cvs-update.pl
+%{_datadir}/%{name}/bin/gnats2bz.pl
+%{_datadir}/%{name}/bin/jb2bz.py
+%{_datadir}/%{name}/bin/mysqld-watcher.pl
+%{_datadir}/%{name}/bin/sendbugmail.pl
+%{_datadir}/%{name}/bin/sendunsentbugmail.pl
+%{_datadir}/%{name}/bin/syncLDAP.pl
+%{_datadir}/%{name}/bin/yp_nomail.sh
+%{_datadir}/%{name}/bin/bugzilla-submit
+%{_datadir}/%{name}/bin/buglist
+%{_datadir}/%{name}/bin/bugs
+%{_datadir}/%{name}/bin/magic.py
+%{_datadir}/%{name}/bin/gnatsparse.py
+%{_datadir}/%{name}/bin/specialuu.py
+%config(noreplace) %{_sysconfdir}/%{name}/query.conf
+
+
