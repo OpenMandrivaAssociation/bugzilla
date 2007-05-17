@@ -1,5 +1,5 @@
 %define name	bugzilla
-%define version 2.22.2
+%define version 3.0
 %define release %mkrel 1
 
 %define _provides_exceptions perl(.*)
@@ -12,9 +12,10 @@ Summary:	A bug tracking system developed by mozilla.org
 License:	MPL
 Group:		Networking/WWW
 URL:		http://www.bugzilla.org
-Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.bz2
-Patch0:		%{name}-2.22.2.fhs.patch
-Patch1:		%{name}-2.20.install.patch
+Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
+Patch0:		%{name}-3.0-fhs.patch
+Patch1:		%{name}-3.0-dont-mess-with-perms.patch
+Patch2:		%{name}-3.0-fix-duplicate-warnings.patch
 Requires:	perl-AppConfig >= 1.52
 Requires:	perl-DBI >= 1.38
 Requires:	perl-CGI >= 2.93
@@ -47,6 +48,7 @@ This package contains additional tools for %{name}.
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 find . -name CVS -o -name .cvsignore | xargs rm -rf
 
 # fix perms
@@ -78,8 +80,6 @@ install -d -m 755 %{buildroot}%{_datadir}/%{name}/bin
 cp -pr template %{buildroot}%{_datadir}/%{name}
 cp -pr Bugzilla %{buildroot}%{_datadir}/%{name}/lib
 install -m 644 Bugzilla.pm \
-	globals.pl \
-	contrib/BugzillaEmail.pm \
 	%{buildroot}%{_datadir}/%{name}/lib
 install -m 755 collectstats.pl \
 	testserver.pl \
@@ -87,8 +87,6 @@ install -m 755 collectstats.pl \
 	importxml.pl \
 	whineatnews.pl \
 	whine.pl \
-	contrib/bug_email.pl \
-	contrib/bugzilla_email_append.pl \
 	contrib/bugzilla_ldapsync.rb \
 	contrib/bzdbcopy.pl \
 	contrib/cvs-update.pl \
@@ -199,9 +197,6 @@ rm -rf %{buildroot}
 %{_datadir}/%{name}
 %{_sysconfdir}/%{name}
 %attr(-,apache,apache) %{_localstatedir}/%{name}
-%exclude %{_datadir}/%{name}/lib/BugzillaEmail.pm
-%exclude %{_datadir}/%{name}/bin/bug_email.pl
-%exclude %{_datadir}/%{name}/bin/bugzilla_email_append.pl
 %exclude %{_datadir}/%{name}/bin/bugzilla_ldapsync.rb
 %exclude %{_datadir}/%{name}/bin/cvs-update.pl
 %exclude %{_datadir}/%{name}/bin/gnats2bz.pl
@@ -221,12 +216,9 @@ rm -rf %{buildroot}
 
 %files contrib
 %defattr(-,root,root)
-%doc contrib/README contrib/README.Mailif
+%doc contrib/README
 %doc contrib/bugzilla-submit/README.bugzilla-submit
 %doc contrib/gnatsparse/README.gnatsparse
-%{_datadir}/%{name}/lib/BugzillaEmail.pm
-%{_datadir}/%{name}/bin/bug_email.pl
-%{_datadir}/%{name}/bin/bugzilla_email_append.pl
 %{_datadir}/%{name}/bin/bugzilla_ldapsync.rb
 %{_datadir}/%{name}/bin/cvs-update.pl
 %{_datadir}/%{name}/bin/gnats2bz.pl
@@ -243,5 +235,3 @@ rm -rf %{buildroot}
 %{_datadir}/%{name}/bin/gnatsparse.py
 %{_datadir}/%{name}/bin/specialuu.py
 %config(noreplace) %{_sysconfdir}/%{name}/query.conf
-
-
