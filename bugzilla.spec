@@ -118,8 +118,8 @@ install -d -m 755 %{buildroot}%{_sysconfdir}/%{name}
 install -d -m 755 %{buildroot}%{_webappconfdir}
 cat > %{buildroot}%{_webappconfdir}/%{name}.conf <<EOF
 # Bugzilla Apache configuration
-Alias /%{name} %{_var}/www/%{name}
 Alias /bugzilla/data %{_localstatedir}/bugzilla/
+Alias /%{name} %{_var}/www/%{name}
 
 <Directory %{_var}/www/%{name}>
     Options ExecCGI
