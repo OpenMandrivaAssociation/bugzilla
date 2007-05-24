@@ -3,7 +3,7 @@
 %define release %mkrel 2
 
 %define _provides_exceptions perl(.*)
-%define _requires_exceptions perl(\\(CGI.pl\\|XML::Parser\\|Net::LDAP\\|Bugzilla.*\\|DBI::db\\|DBD::Pg\\))
+%define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\))
 
 Name:		%{name}
 Version:	%{version}
@@ -16,11 +16,12 @@ Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.g
 Patch0:		%{name}-3.0-fhs.patch
 Patch1:		%{name}-3.0-dont-mess-with-perms.patch
 Patch2:		%{name}-3.0-fix-duplicate-warnings.patch
-Requires:	perl-AppConfig >= 1.52
-Requires:	perl-DBI >= 1.38
 Requires:	perl-CGI >= 2.93
-Requires:	perl-MailTools >= 1.65
-Requires:	perl-Template-Toolkit >= 2.08
+Requires:	perl-TimeDate >= 2.21
+Requires:	perl-DBI >= 1.41
+Requires:	perl-Template-Toolkit >= 2.12
+Requires:	perl-Email-Send >= 2.00
+Requires:	perl-Email-MIME-Modifier
 Requires:	apache
 Requires:	sendmail-command
 # webapp macros and scriptlets
