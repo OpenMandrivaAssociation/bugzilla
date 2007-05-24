@@ -1,6 +1,6 @@
 %define name	bugzilla
 %define version 3.0
-%define release %mkrel 1
+%define release %mkrel 2
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(CGI.pl\\|XML::Parser\\|Net::LDAP\\|Bugzilla.*\\|DBI::db\\|DBD::Pg\\))
@@ -73,6 +73,7 @@ rm -rf %{buildroot}
 install -d -m 755 %{buildroot}%{_var}/www/%{name}
 install -m 755 *.cgi %{buildroot}%{_var}/www/%{name}
 cp -pr js skins images *.js robots.txt %{buildroot}%{_var}/www/%{name}
+install -d -m 755 %{buildroot}%{_var}/www/%{name}/skins/custom
 
 install -d -m 755 %{buildroot}%{_datadir}/%{name}
 install -d -m 755 %{buildroot}%{_datadir}/%{name}/lib
