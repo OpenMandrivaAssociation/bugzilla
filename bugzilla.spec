@@ -1,6 +1,6 @@
 %define name	bugzilla
 %define version 3.0
-%define release %mkrel 3
+%define release %mkrel 4
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\))
@@ -16,12 +16,13 @@ Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.g
 Patch0:		%{name}-3.0-fhs.patch
 Patch1:		%{name}-3.0-dont-mess-with-perms.patch
 Patch2:		%{name}-3.0-fix-duplicate-warnings.patch
-Requires:	perl-CGI >= 2.93
-Requires:	perl-TimeDate >= 2.21
-Requires:	perl-DBI >= 1.41
-Requires:	perl-Template-Toolkit >= 2.12
-Requires:	perl-Email-Send >= 2.00
-Requires:	perl-Email-MIME-Modifier
+Requires:	perl(CGI) >= 2.93
+Requires:	perl(Date::Format) >= 2.21
+Requires:	perl(File::Spec) >= 0.84
+Requires:	perl(DBI) >= 1.41
+Requires:	perl(Template) >= 2.12
+Requires:	perl(Email::Send) >= 2.00
+Requires:	perl(Email::MIME::Modifier)
 Requires:	apache
 Requires:	sendmail-command
 # webapp macros and scriptlets
