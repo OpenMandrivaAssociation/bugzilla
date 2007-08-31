@@ -1,6 +1,6 @@
 %define name	bugzilla
-%define version 3.0
-%define release %mkrel 4
+%define version 3.0.1
+%define release %mkrel 1
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\))
@@ -13,9 +13,8 @@ License:	MPL
 Group:		Networking/WWW
 URL:		http://www.bugzilla.org
 Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
-Patch0:		%{name}-3.0-fhs.patch
+Patch0:		%{name}-3.0.1-fhs.patch
 Patch1:		%{name}-3.0-dont-mess-with-perms.patch
-Patch2:		%{name}-3.0-fix-duplicate-warnings.patch
 Requires:	perl(CGI) >= 2.93
 Requires:	perl(Date::Format) >= 2.21
 Requires:	perl(File::Spec) >= 0.84
@@ -50,7 +49,6 @@ This package contains additional tools for %{name}.
 %setup -q
 %patch0 -p1
 %patch1 -p1
-%patch2 -p1
 find . -name CVS -o -name .cvsignore | xargs rm -rf
 
 # fix perms
