@@ -1,6 +1,6 @@
 %define name	bugzilla
 %define version 3.0.1
-%define release %mkrel 1
+%define release %mkrel 2
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\))
