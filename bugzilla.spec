@@ -1,6 +1,6 @@
 %define name	bugzilla
 %define version 3.0.2
-%define release %mkrel 1
+%define release %mkrel 2
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\))
@@ -15,6 +15,8 @@ URL:		http://www.bugzilla.org
 Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
 Patch0:		%{name}-3.0.1-fhs.patch
 Patch1:		%{name}-3.0-dont-mess-with-perms.patch
+# https://bugzilla.mozilla.org/show_bug.cgi?id=392482
+Patch2:		bugzilla-extern_id.diff
 Requires:	perl(CGI) >= 2.93
 Requires:	perl(Date::Format) >= 2.21
 Requires:	perl(File::Spec) >= 0.84
@@ -49,6 +51,7 @@ This package contains additional tools for %{name}.
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 find . -name CVS -o -name .cvsignore | xargs rm -rf
 
 # fix perms
