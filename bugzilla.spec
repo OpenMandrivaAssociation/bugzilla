@@ -32,6 +32,7 @@ Requires(postun):	rpm-helper >= 0.16
 BuildRequires:	rpm-helper >= 0.16
 BuildRequires:	rpm-mandriva-setup >= 1.23
 BuildArch:	noarch
+BuildRoot:	%{_tmppath}/%{name}-%{version}
 
 %description
 Bugzilla is one example of a class of programs called "Defect Tracking
