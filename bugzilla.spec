@@ -1,5 +1,5 @@
 %define name	bugzilla
-%define version 3.0.3
+%define version 3.0.4
 %define release %mkrel 1
 
 %define _provides_exceptions perl(.*)
