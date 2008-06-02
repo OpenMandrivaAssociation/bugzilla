@@ -111,7 +111,7 @@ install -m 755 collectstats.pl \
 	%{buildroot}%{_datadir}/%{name}/bin
 cp -p bugzilla.dtd %{buildroot}%{_datadir}/%{name}
 
-install -d -m 755 %{buildroot}%{_localstatedir}/%{name}
+install -d -m 755 %{buildroot}%{_localstatedir}/lib/%{name}
 install -d -m 755 %{buildroot}%{_sysconfdir}/%{name}
 install -m 644 contrib/cmdline/query.conf %{buildroot}%{_sysconfdir}/%{name}
 
@@ -121,7 +121,7 @@ install -d -m 755 %{buildroot}%{_sysconfdir}/%{name}
 install -d -m 755 %{buildroot}%{_webappconfdir}
 cat > %{buildroot}%{_webappconfdir}/%{name}.conf <<EOF
 # Bugzilla Apache configuration
-Alias /bugzilla/data %{_localstatedir}/bugzilla/
+Alias /bugzilla/data %{_localstatedir}/lib/bugzilla/
 Alias /%{name} %{_var}/www/%{name}
 
 <Directory %{_var}/www/%{name}>
@@ -132,7 +132,7 @@ Alias /%{name} %{_var}/www/%{name}
 
 # The duplicates.rdf must be accessible, as it is used by
 # duplicates.xul
-<Directory %{_localstatedir}/bugzilla>
+<Directory %{_localstatedir}/lib/bugzilla>
     <Files duplicates.rdf>
 	Allow from all
     </Files>
@@ -140,7 +140,7 @@ Alias /%{name} %{_var}/www/%{name}
 
 # The dot files must be accessible to the public webdot server
 # The png files locally created locally must be accessible
-<Directory %{_localstatedir}/bugzilla/webdot>
+<Directory %{_localstatedir}/lib/bugzilla/webdot>
     <FilesMatch \.dot$>
 	Allow from research.att.com
     </FilesMatch>
@@ -200,7 +200,7 @@ rm -rf %{buildroot}
 %{_var}/www/%{name}
 %{_datadir}/%{name}
 %{_sysconfdir}/%{name}
-%attr(-,apache,apache) %{_localstatedir}/%{name}
+%attr(-,apache,apache) %{_localstatedir}/lib/%{name}
 %exclude %{_datadir}/%{name}/bin/bugzilla_ldapsync.rb
 %exclude %{_datadir}/%{name}/bin/cvs-update.pl
 %exclude %{_datadir}/%{name}/bin/gnats2bz.pl
