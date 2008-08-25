@@ -14,7 +14,7 @@ Group:		Networking/WWW
 URL:		http://www.bugzilla.org
 Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
 Patch0:		%{name}-3.0.1-fhs.patch
-Patch1:		%{name}-3.0-dont-mess-with-perms.patch
+Patch1:		%{name}-3.0.5-dont-mess-with-perms.patch
 # https://bugzilla.mozilla.org/show_bug.cgi?id=392482
 Patch2:		bugzilla-extern_id.diff
 Requires:	perl(CGI) >= 2.93
