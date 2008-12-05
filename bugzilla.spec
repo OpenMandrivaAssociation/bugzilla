@@ -1,9 +1,9 @@
 %define name	bugzilla
-%define version 3.0.6
+%define version 3.2
 %define release %mkrel 1
 
 %define _provides_exceptions perl(.*)
-%define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\))
+%define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\|DBI::st\\))
 
 Name:		%{name}
 Version:	%{version}
@@ -13,8 +13,8 @@ License:	MPL
 Group:		Networking/WWW
 URL:		http://www.bugzilla.org
 Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
-Patch0:		%{name}-3.0.1-fhs.patch
-Patch1:		%{name}-3.0.5-dont-mess-with-perms.patch
+Patch0:		%{name}-3.2-fhs.patch
+Patch1:		%{name}-3.2-dont-mess-with-perms.patch
 # https://bugzilla.mozilla.org/show_bug.cgi?id=392482
 Patch2:		bugzilla-extern_id.diff
 Requires:	perl(CGI) >= 2.93
@@ -75,7 +75,7 @@ rm -rf %{buildroot}
 
 install -d -m 755 %{buildroot}%{_var}/www/%{name}
 install -m 755 *.cgi %{buildroot}%{_var}/www/%{name}
-cp -pr js skins images *.js robots.txt %{buildroot}%{_var}/www/%{name}
+cp -pr js skins images robots.txt %{buildroot}%{_var}/www/%{name}
 install -d -m 755 %{buildroot}%{_var}/www/%{name}/skins/custom
 
 install -d -m 755 %{buildroot}%{_datadir}/%{name}
