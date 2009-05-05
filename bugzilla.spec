@@ -1,6 +1,6 @@
 %define name	bugzilla
 %define version 3.2.3
-%define release %mkrel 1
+%define release %mkrel 2
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\|DBI::st\\))
@@ -29,6 +29,16 @@ Requires:	sendmail-command
 # webapp macros and scriptlets
 Requires(post):		rpm-helper >= 0.16
 Requires(postun):	rpm-helper >= 0.16
+Suggests: perl-GD
+Suggests: perl-GDGraph
+Suggests: perl-GD-TextUtil
+Suggests: perl-Chart
+Suggests: perl-XML-Parser
+Suggests: perl-Net-LDAP
+Suggests: perl-PatchReader
+Suggests: diffutils
+Suggests: patchutils
+Suggests: graphviz
 BuildRequires:	rpm-helper >= 0.16
 BuildRequires:	rpm-mandriva-setup >= 1.23
 BuildArch:	noarch
