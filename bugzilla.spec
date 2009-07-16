@@ -1,6 +1,6 @@
 %define name	bugzilla
-%define version 3.2.3
-%define release %mkrel 2
+%define version 3.2.4
+%define release %mkrel 1
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\|DBI::st\\))
@@ -13,7 +13,7 @@ License:	MPL
 Group:		Networking/WWW
 URL:		http://www.bugzilla.org
 Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
-Patch0:		%{name}-3.2-fhs.patch
+Patch0:		%{name}-3.2.4-fhs.patch
 Patch1:		%{name}-3.2.2-dont-mess-with-perms.patch
 # https://bugzilla.mozilla.org/show_bug.cgi?id=392482
 Patch2:		bugzilla-extern_id.diff
@@ -83,12 +83,13 @@ find . -type f | xargs perl -pi -e "s|/usr/local/bin|%{_bindir}|g"
 %install
 rm -rf %{buildroot}
 
-install -d -m 755 %{buildroot}%{_var}/www/%{name}
-install -m 755 *.cgi %{buildroot}%{_var}/www/%{name}
-cp -pr js skins images robots.txt %{buildroot}%{_var}/www/%{name}
-install -d -m 755 %{buildroot}%{_var}/www/%{name}/skins/custom
-
 install -d -m 755 %{buildroot}%{_datadir}/%{name}
+
+install -d -m 755 %{buildroot}%{_datadir}/%{name}/www
+install -m 755 *.cgi %{buildroot}%{_datadir}/%{name}/www
+cp -pr js skins images robots.txt %{buildroot}%{_datadir}/%{name}/www
+install -d -m 755 %{buildroot}%{_datadir}/%{name}/www/skins/custom
+
 install -d -m 755 %{buildroot}%{_datadir}/%{name}/lib
 install -d -m 755 %{buildroot}%{_datadir}/%{name}/bin
 cp -pr template %{buildroot}%{_datadir}/%{name}
@@ -132,9 +133,9 @@ install -d -m 755 %{buildroot}%{_webappconfdir}
 cat > %{buildroot}%{_webappconfdir}/%{name}.conf <<EOF
 # Bugzilla Apache configuration
 Alias /bugzilla/data %{_localstatedir}/lib/bugzilla/
-Alias /%{name} %{_var}/www/%{name}
+Alias /%{name} %{_datadir}/%{name}/www
 
-<Directory %{_var}/www/%{name}>
+<Directory %{_datadir}/%{name}/www>
     Options ExecCGI
     DirectoryIndex index.cgi
     Allow from all
@@ -175,8 +176,8 @@ Mandriva RPM specific notes
 setup
 -----
 The setup used here differs from default one, to achieve better FHS compliance.
-- the files accessibles from the web are in %{_var}/www/%{name}
-- the files non accessibles from the web are in %{_datadir}/%{name}
+- the constant files are in %{_datadir}/%{name}
+- the variables files are in %{_localstatedir}/lib/%{name}
 - the configuration file will be generated in %{_sysconfdir}/%{name}
 
 post-installation
@@ -207,7 +208,6 @@ rm -rf %{buildroot}
 %doc QUICKSTART README README.mdv UPGRADING UPGRADING-pre-2.8 docs
 %config(noreplace) %{_webappconfdir}/%{name}.conf
 %config(noreplace) %{_sysconfdir}/cron.d/%{name}
-%{_var}/www/%{name}
 %{_datadir}/%{name}
 %{_sysconfdir}/%{name}
 %attr(-,apache,apache) %{_localstatedir}/lib/%{name}
