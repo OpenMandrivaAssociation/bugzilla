@@ -1,6 +1,6 @@
 %define name	bugzilla
 %define version 3.4
-%define release %mkrel 2
+%define release %mkrel 3
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\|DBI::st\\))
@@ -18,6 +18,8 @@ Patch0:		%{name}-3.4-fhs.patch
 Patch1:		%{name}-3.4-dont-mess-file-perms.patch
 # https://bugzilla.mozilla.org/show_bug.cgi?id=392482
 Patch2:		%{name}-3.4-extern_id.patch
+# https://bugzilla.mozilla.org/show_bug.cgi?id=507389
+Patch3:		%{name}-3.4-mozilla-security-fix.patch
 
 BuildRequires:	rpm-helper >= 0.16
 BuildRequires:	rpm-mandriva-setup >= 1.23
@@ -71,6 +73,7 @@ This package contains additional tools for %{name}.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p0
 find . -name CVS -o -name .cvsignore | xargs rm -rf
 
 # fix perms
