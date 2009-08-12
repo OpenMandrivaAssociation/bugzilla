@@ -1,6 +1,6 @@
 %define name	bugzilla
 %define version 3.4
-%define release %mkrel 1
+%define release %mkrel 2
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\|DBI::st\\))
@@ -8,41 +8,50 @@
 Name:		%{name}
 Version:	%{version}
 Release:	%{release}
+
 Summary:	A bug tracking system developed by mozilla.org
 License:	MPL
 Group:		Networking/WWW
-URL:		http://www.bugzilla.org
+Url:		http://www.bugzilla.org
 Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
 Patch0:		%{name}-3.4-fhs.patch
 Patch1:		%{name}-3.4-dont-mess-file-perms.patch
 # https://bugzilla.mozilla.org/show_bug.cgi?id=392482
 Patch2:		%{name}-3.4-extern_id.patch
+
+BuildRequires:	rpm-helper >= 0.16
+BuildRequires:	rpm-mandriva-setup >= 1.23
+
+BuildArch:	noarch
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}
+
+Requires:	apache
 Requires:	perl(CGI) >= 2.93
 Requires:	perl(Date::Format) >= 2.21
-Requires:	perl(File::Spec) >= 0.84
-Requires:	perl(DBI) >= 1.41
-Requires:	perl(Template) >= 2.12
-Requires:	perl(Email::Send) >= 2.00
+Requires:	perl(DateTime)     >= 0.280.0
+Requires:	perl(Digest::SHA)
+Requires:	perl(File::Spec)   >= 0.840.0
+Requires:	perl(DBI)          >= 1.410.0
+Requires:	perl(Template)     >= 2.120.0
+Requires:	perl(Email::Send)  >= 2.0.0
 Requires:	perl(Email::MIME::Modifier)
-Requires:	apache
 Requires:	sendmail-command
+
 # webapp macros and scriptlets
 Requires(post):		rpm-helper >= 0.16
 Requires(postun):	rpm-helper >= 0.16
-Suggests: perl-GD
-Suggests: perl-GDGraph
-Suggests: perl-GD-TextUtil
-Suggests: perl-Chart
-Suggests: perl-XML-Parser
-Suggests: perl-Net-LDAP
-Suggests: perl-PatchReader
 Suggests: diffutils
-Suggests: patchutils
 Suggests: graphviz
-BuildRequires:	rpm-helper >= 0.16
-BuildRequires:	rpm-mandriva-setup >= 1.23
-BuildArch:	noarch
-BuildRoot:	%{_tmppath}/%{name}-%{version}
+Suggests: patchutils
+Suggests: perl(DBD::mysql) >= 4.0.0
+Suggests: perl(DBD::Pg)    >= 1.45.0
+Suggests: perl(GD)
+Suggests: perl(GD::Graph)
+Suggests: perl(GD::TextUtil)
+Suggests: perl(Chart::Base)
+Suggests: perl(Net::LDAP)
+Suggests: perl(PatchReader)
+Suggests: perl(XML::Parser)
 
 %description
 Bugzilla is one example of a class of programs called "Defect Tracking
