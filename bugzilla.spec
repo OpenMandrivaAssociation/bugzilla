@@ -1,6 +1,6 @@
 %define name	bugzilla
 %define version 3.4.3
-%define release %mkrel 1
+%define release %mkrel 2
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\|DBI::st\\))
@@ -147,14 +147,16 @@ Alias /%{name} %{_datadir}/%{name}/www
 <Directory %{_datadir}/%{name}/www>
     Options ExecCGI
     DirectoryIndex index.cgi
-    Allow from all
+    Order allow,deny
+    Allow from localhost
 </Directory>
 
 # The duplicates.rdf must be accessible, as it is used by
 # duplicates.xul
 <Directory %{_localstatedir}/lib/bugzilla>
     <Files duplicates.rdf>
-	Allow from all
+        Order allow,deny
+        Allow from localhost
     </Files>
 </Directory>
 
@@ -162,11 +164,13 @@ Alias /%{name} %{_datadir}/%{name}/www
 # The png files locally created locally must be accessible
 <Directory %{_localstatedir}/lib/bugzilla/webdot>
     <FilesMatch \.dot$>
-	Allow from research.att.com
+        Order allow,deny
+        Allow from research.att.com
     </FilesMatch>
 
     <FilesMatch \.png$>
-	Allow from all
+        Order allow,deny
+        Allow from localhost
     </FilesMatch>
 </Directory>
 EOF
