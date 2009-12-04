@@ -1,6 +1,6 @@
 %define name	bugzilla
 %define version 3.4.3
-%define release %mkrel 2
+%define release %mkrel 3
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\|DBI::st\\))
@@ -145,10 +145,13 @@ Alias /bugzilla/data %{_localstatedir}/lib/bugzilla/
 Alias /%{name} %{_datadir}/%{name}/www
 
 <Directory %{_datadir}/%{name}/www>
+    Order allow,deny
+    Allow from 127.0.0.1
+    Deny from all
+    ErrorDocument 403 "Access denied per %{_webappconfdir}/%{name}.conf"
+
     Options ExecCGI
     DirectoryIndex index.cgi
-    Order allow,deny
-    Allow from localhost
 </Directory>
 
 # The duplicates.rdf must be accessible, as it is used by
@@ -156,7 +159,9 @@ Alias /%{name} %{_datadir}/%{name}/www
 <Directory %{_localstatedir}/lib/bugzilla>
     <Files duplicates.rdf>
         Order allow,deny
-        Allow from localhost
+        Allow from 127.0.0.1
+        Deny from all
+        ErrorDocument 403 "Access denied per %{_webappconfdir}/%{name}.conf"
     </Files>
 </Directory>
 
@@ -170,7 +175,9 @@ Alias /%{name} %{_datadir}/%{name}/www
 
     <FilesMatch \.png$>
         Order allow,deny
-        Allow from localhost
+        Allow from 127.0.0.1
+        Deny from all
+        ErrorDocument 403 "Access denied per %{_webappconfdir}/%{name}.conf"
     </FilesMatch>
 </Directory>
 EOF
