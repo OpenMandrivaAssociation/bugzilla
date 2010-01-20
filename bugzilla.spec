@@ -146,9 +146,7 @@ Alias /%{name} %{_datadir}/%{name}/www
 
 <Directory %{_datadir}/%{name}/www>
     Order allow,deny
-    Allow from 127.0.0.1
-    Deny from all
-    ErrorDocument 403 "Access denied per %{_webappconfdir}/%{name}.conf"
+    Allow from all
 
     Options ExecCGI
     DirectoryIndex index.cgi
@@ -159,9 +157,7 @@ Alias /%{name} %{_datadir}/%{name}/www
 <Directory %{_localstatedir}/lib/bugzilla>
     <Files duplicates.rdf>
         Order allow,deny
-        Allow from 127.0.0.1
-        Deny from all
-        ErrorDocument 403 "Access denied per %{_webappconfdir}/%{name}.conf"
+        Allow from all
     </Files>
 </Directory>
 
@@ -169,15 +165,14 @@ Alias /%{name} %{_datadir}/%{name}/www
 # The png files locally created locally must be accessible
 <Directory %{_localstatedir}/lib/bugzilla/webdot>
     <FilesMatch \.dot$>
-        Order allow,deny
+        Order deny,allow
+        Deny from all
         Allow from research.att.com
     </FilesMatch>
 
     <FilesMatch \.png$>
         Order allow,deny
-        Allow from 127.0.0.1
-        Deny from all
-        ErrorDocument 403 "Access denied per %{_webappconfdir}/%{name}.conf"
+        Allow from all
     </FilesMatch>
 </Directory>
 EOF
