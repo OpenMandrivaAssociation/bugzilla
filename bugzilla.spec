@@ -1,6 +1,6 @@
 %define name	bugzilla
-%define version 3.4.4
-%define release %mkrel 2
+%define version 3.4.5
+%define release %mkrel 1
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\|DBI::st\\))
@@ -14,10 +14,10 @@ License:	MPL
 Group:		Networking/WWW
 Url:		http://www.bugzilla.org
 Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
-Patch0:		%{name}-3.4.2-fhs.patch
-Patch1:		%{name}-3.4-dont-mess-file-perms.patch
+Patch0:		%{name}-3.4.5-fhs.patch
+Patch1:		%{name}-3.4.5-dont-mess-file-perms.patch
 # https://bugzilla.mozilla.org/show_bug.cgi?id=392482
-Patch2:		%{name}-3.4-extern_id.patch
+Patch2:		%{name}-3.4.5-extern_id.patch
 
 BuildRequires:	rpm-helper >= 0.16
 BuildRequires:	rpm-mandriva-setup >= 1.23
