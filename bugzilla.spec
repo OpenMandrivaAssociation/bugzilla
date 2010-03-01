@@ -1,6 +1,6 @@
 %define name	bugzilla
 %define version 3.4.5
-%define release %mkrel 1
+%define release %mkrel 2
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\|DBI::st\\))
@@ -18,13 +18,6 @@ Patch0:		%{name}-3.4.5-fhs.patch
 Patch1:		%{name}-3.4.5-dont-mess-file-perms.patch
 # https://bugzilla.mozilla.org/show_bug.cgi?id=392482
 Patch2:		%{name}-3.4.5-extern_id.patch
-
-BuildRequires:	rpm-helper >= 0.16
-BuildRequires:	rpm-mandriva-setup >= 1.23
-
-BuildArch:	noarch
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}
-
 Requires:	apache
 Requires:	perl(CGI) >= 2.93
 Requires:	perl(Date::Format) >= 2.21
@@ -36,10 +29,10 @@ Requires:	perl(Template)     >= 2.120.0
 Requires:	perl(Email::Send)  >= 2.0.0
 Requires:	perl(Email::MIME::Modifier)
 Requires:	sendmail-command
-
-# webapp macros and scriptlets
-Requires(post):		rpm-helper >= 0.16
-Requires(postun):	rpm-helper >= 0.16
+%if %mdkversion < 201010
+Requires(post):   rpm-helper
+Requires(postun):   rpm-helper
+%endif
 Suggests: diffutils
 Suggests: graphviz
 Suggests: patchutils
@@ -52,6 +45,8 @@ Suggests: perl(Chart::Base)
 Suggests: perl(Net::LDAP)
 Suggests: perl(PatchReader)
 Suggests: perl(XML::Parser)
+BuildArch:	noarch
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}
 
 %description
 Bugzilla is one example of a class of programs called "Defect Tracking
