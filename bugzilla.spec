@@ -1,5 +1,5 @@
 %define name	bugzilla
-%define version 3.4.6
+%define version 3.6
 %define release %mkrel 1
 
 %define _provides_exceptions perl(.*)
@@ -14,10 +14,10 @@ License:	MPL
 Group:		Networking/WWW
 Url:		http://www.bugzilla.org
 Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
-Patch0:		%{name}-3.4.5-fhs.patch
-Patch1:		%{name}-3.4.5-dont-mess-file-perms.patch
+Patch0:		%{name}-3.6-fhs.patch
+Patch1:		%{name}-3.6-dont-mess-file-perms.patch
 # https://bugzilla.mozilla.org/show_bug.cgi?id=392482
-Patch2:		%{name}-3.4.5-extern_id.patch
+Patch2:		%{name}-3.6-extern-id.patch
 Requires:	apache
 Requires:	perl(CGI) >= 2.93
 Requires:	perl(Date::Format) >= 2.21
@@ -72,7 +72,6 @@ find . -name CVS -o -name .cvsignore | xargs rm -rf
 chmod -R go=u-w .
 chmod 644 Bugzilla/Bug.pm
 chmod 644 template/en/default/admin/keywords/*
-chmod 644 contrib/gnatsparse/README
 chmod 755 docs/makedocs.pl
 
 # fix paths
@@ -80,7 +79,6 @@ find . -type f | xargs perl -pi -e "s|/usr/local/bin|%{_bindir}|g"
 
 # fix contrib documentation files names
 (cd contrib/bugzilla-submit && mv README README.bugzilla-submit)
-(cd contrib/gnatsparse && mv README README.gnatsparse)
 
 %build
 
@@ -109,7 +107,6 @@ install -m 755 collectstats.pl \
 	contrib/bugzilla_ldapsync.rb \
 	contrib/bzdbcopy.pl \
 	contrib/cvs-update.pl \
-	contrib/gnats2bz.pl \
 	contrib/jb2bz.py \
 	contrib/merge-users.pl \
 	contrib/mysqld-watcher.pl \
@@ -120,9 +117,6 @@ install -m 755 collectstats.pl \
 	contrib/bugzilla-submit/bugzilla-submit \
 	contrib/cmdline/buglist \
 	contrib/cmdline/bugs \
-	contrib/gnatsparse/magic.py \
-	contrib/gnatsparse/gnatsparse.py \
-	contrib/gnatsparse/specialuu.py \
 	%{buildroot}%{_datadir}/%{name}/bin
 cp -p bugzilla.dtd %{buildroot}%{_datadir}/%{name}
 
@@ -227,7 +221,6 @@ rm -rf %{buildroot}
 %attr(-,apache,apache) %{_localstatedir}/lib/%{name}
 %exclude %{_datadir}/%{name}/bin/bugzilla_ldapsync.rb
 %exclude %{_datadir}/%{name}/bin/cvs-update.pl
-%exclude %{_datadir}/%{name}/bin/gnats2bz.pl
 %exclude %{_datadir}/%{name}/bin/jb2bz.py
 %exclude %{_datadir}/%{name}/bin/mysqld-watcher.pl
 %exclude %{_datadir}/%{name}/bin/sendbugmail.pl
@@ -237,19 +230,14 @@ rm -rf %{buildroot}
 %exclude %{_datadir}/%{name}/bin/bugzilla-submit
 %exclude %{_datadir}/%{name}/bin/buglist
 %exclude %{_datadir}/%{name}/bin/bugs
-%exclude %{_datadir}/%{name}/bin/magic.py
-%exclude %{_datadir}/%{name}/bin/gnatsparse.py
-%exclude %{_datadir}/%{name}/bin/specialuu.py
 %exclude %{_sysconfdir}/%{name}/query.conf
 
 %files contrib
 %defattr(-,root,root)
 %doc contrib/README
 %doc contrib/bugzilla-submit/README.bugzilla-submit
-%doc contrib/gnatsparse/README.gnatsparse
 %{_datadir}/%{name}/bin/bugzilla_ldapsync.rb
 %{_datadir}/%{name}/bin/cvs-update.pl
-%{_datadir}/%{name}/bin/gnats2bz.pl
 %{_datadir}/%{name}/bin/jb2bz.py
 %{_datadir}/%{name}/bin/mysqld-watcher.pl
 %{_datadir}/%{name}/bin/sendbugmail.pl
@@ -259,7 +247,4 @@ rm -rf %{buildroot}
 %{_datadir}/%{name}/bin/bugzilla-submit
 %{_datadir}/%{name}/bin/buglist
 %{_datadir}/%{name}/bin/bugs
-%{_datadir}/%{name}/bin/magic.py
-%{_datadir}/%{name}/bin/gnatsparse.py
-%{_datadir}/%{name}/bin/specialuu.py
 %config(noreplace) %{_sysconfdir}/%{name}/query.conf
