@@ -1,5 +1,5 @@
 %define name	bugzilla
-%define version 3.6
+%define version 3.6.2
 %define release %mkrel 1
 
 %define _provides_exceptions perl(.*)
@@ -14,8 +14,8 @@ License:	MPL
 Group:		Networking/WWW
 Url:		http://www.bugzilla.org
 Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
-Patch0:		%{name}-3.6-fhs.patch
-Patch1:		%{name}-3.6-dont-mess-file-perms.patch
+Patch0:		%{name}-3.6.2-fhs.patch
+Patch1:		%{name}-3.6.2-dont-mess-file-perms.patch
 # https://bugzilla.mozilla.org/show_bug.cgi?id=392482
 Patch2:		%{name}-3.6-extern-id.patch
 Requires:	apache
