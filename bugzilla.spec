@@ -1,5 +1,5 @@
 %define name	bugzilla
-%define version 3.6.2
+%define version 3.6.3
 %define release %mkrel 1
 
 %define _provides_exceptions perl(.*)
@@ -14,8 +14,8 @@ License:	MPL
 Group:		Networking/WWW
 Url:		http://www.bugzilla.org
 Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
-Patch0:		%{name}-3.6.2-fhs.patch
-Patch1:		%{name}-3.6.2-dont-mess-file-perms.patch
+Patch0:		%{name}-3.6.3-fhs.patch
+Patch1:		%{name}-3.6.3-dont-mess-file-perms.patch
 # https://bugzilla.mozilla.org/show_bug.cgi?id=392482
 Patch2:		%{name}-3.6-extern-id.patch
 Requires:	apache
@@ -90,7 +90,9 @@ install -d -m 755 %{buildroot}%{_datadir}/%{name}
 install -d -m 755 %{buildroot}%{_datadir}/%{name}/www
 install -m 755 *.cgi %{buildroot}%{_datadir}/%{name}/www
 cp -pr js skins images robots.txt %{buildroot}%{_datadir}/%{name}/www
+install -d -m 755 %{buildroot}%{_datadir}/%{name}/extensions
 install -d -m 755 %{buildroot}%{_datadir}/%{name}/www/skins/custom
+install -d -m 755 %{buildroot}%{_datadir}/%{name}/www/skins/contrib
 
 install -d -m 755 %{buildroot}%{_datadir}/%{name}/lib
 install -d -m 755 %{buildroot}%{_datadir}/%{name}/bin
