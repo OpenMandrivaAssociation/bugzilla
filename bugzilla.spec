@@ -1,6 +1,6 @@
 %define name	bugzilla
 %define version 3.6.3
-%define release %mkrel 1
+%define release %mkrel 2
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\|DBI::st\\))
@@ -96,7 +96,11 @@ install -d -m 755 %{buildroot}%{_datadir}/%{name}/www/skins/contrib
 
 install -d -m 755 %{buildroot}%{_datadir}/%{name}/lib
 install -d -m 755 %{buildroot}%{_datadir}/%{name}/bin
-cp -pr template %{buildroot}%{_datadir}/%{name}
+
+# only install english templates (bug #61555)
+install -d -m 755 %{buildroot}%{_datadir}/%{name}/template
+cp -pr template/en %{buildroot}%{_datadir}/%{name}/template
+
 cp -pr Bugzilla %{buildroot}%{_datadir}/%{name}/lib
 install -m 644 Bugzilla.pm \
 	%{buildroot}%{_datadir}/%{name}/lib
