@@ -19,7 +19,7 @@ Patch1:		%{name}-3.6.3-dont-mess-file-perms.patch
 # https://bugzilla.mozilla.org/show_bug.cgi?id=392482
 Patch2:		%{name}-3.6-extern-id.patch
 Requires:	apache
-Requires:	perl(CGI) >= 2.93
+Requires:	perl(CGI) >= 1:3.500.0
 Requires:	perl(Date::Format) >= 2.21
 Requires:	perl(DateTime)     >= 0.280.0
 Requires:	perl(Digest::SHA)
