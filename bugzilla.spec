@@ -1,5 +1,5 @@
 %define name	bugzilla
-%define version 3.6.4
+%define version 4.0
 %define release %mkrel 1
 
 %define _provides_exceptions perl(.*)
@@ -64,7 +64,7 @@ This package contains additional tools for %{name}.
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p1
+%patch1 -p0
 %patch2 -p1
 find . -name CVS -o -name .cvsignore | xargs rm -rf
 
