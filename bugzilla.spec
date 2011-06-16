@@ -1,6 +1,6 @@
 %define name	bugzilla
-%define version 4.0
-%define release %mkrel 2
+%define version 4.0.1
+%define release %mkrel 1
 
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\|DBI::st\\))
@@ -15,7 +15,7 @@ Group:		Networking/WWW
 Url:		http://www.bugzilla.org
 Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
 Patch0:		%{name}-3.6.3-fhs.patch
-Patch1:		%{name}-3.6.3-dont-mess-file-perms.patch
+Patch1:		%{name}-4.0.1-dont-mess-file-perms.patch
 # https://bugzilla.mozilla.org/show_bug.cgi?id=392482
 Patch2:		%{name}-3.6-extern-id.patch
 Requires:	apache
@@ -64,7 +64,7 @@ This package contains additional tools for %{name}.
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p0
+%patch1 -p1
 %patch2 -p1
 find . -name CVS -o -name .cvsignore | xargs rm -rf
 
