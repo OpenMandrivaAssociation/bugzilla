@@ -1,0 +1,1076 @@
+diff -Naurp bugzilla-4.0/admin.cgi bugzilla-4.0.oden/admin.cgi
+--- bugzilla-4.0/admin.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/admin.cgi	2011-02-18 13:50:50.535887628 +0100
+@@ -20,8 +20,7 @@
+ # Contributor(s): Frédéric Buclin <LpSolit@gmail.com>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/attachment.cgi bugzilla-4.0.oden/attachment.cgi
+--- bugzilla-4.0/attachment.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/attachment.cgi	2011-02-18 13:50:50.536887833 +0100
+@@ -35,8 +35,7 @@
+ 
+ # Make it harder for us to do dangerous things in Perl.
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::BugMail;
+diff -Naurp bugzilla-4.0/buglist.cgi bugzilla-4.0.oden/buglist.cgi
+--- bugzilla-4.0/buglist.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/buglist.cgi	2011-02-18 13:50:50.547890144 +0100
+@@ -31,8 +31,7 @@
+ 
+ # Make it harder for us to do dangerous things in Perl.
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/Bugzilla/Constants.pm bugzilla-4.0.oden/Bugzilla/Constants.pm
+--- bugzilla-4.0/Bugzilla/Constants.pm	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/Bugzilla/Constants.pm	2011-02-18 13:50:50.548890354 +0100
+@@ -580,44 +580,41 @@ sub bz_locations {
+     #
+     # On mod_cgi this will be a relative path. On mod_perl it will be an
+     # absolute path.
+-    my $libpath = dirname(dirname($INC{'Bugzilla/Constants.pm'}));
+-    # We have to detaint $libpath, but we can't use Bugzilla::Util here.
+-    $libpath =~ /(.*)/;
+-    $libpath = $1;
++    my $basepath = '/usr/share/bugzilla';
+ 
+     my ($project, $localconfig, $datadir);
+     if ($ENV{'PROJECT'} && $ENV{'PROJECT'} =~ /^(\w+)$/) {
+         $project = $1;
+-        $localconfig = "localconfig.$project";
+-        $datadir = "data/$project";
++        $localconfig = "/etc/bugzilla/localconfig.$project";
++        $datadir = "/var/lib/bugzilla/$project";
+     } else {
+-        $localconfig = "localconfig";
+-        $datadir = "data";
++        $localconfig = "/etc/bugzilla/localconfig";
++        $datadir = "/var/lib/bugzilla";
+     }
+ 
+     # We have to return absolute paths for mod_perl. 
+     # That means that if you modify these paths, they must be absolute paths.
+     return {
+-        'libpath'     => $libpath,
+-        'ext_libpath' => "$libpath/lib",
++        'libpath'     => "$basepath/lib",
++        'ext_libpath' => "",
+         # If you put the libraries in a different location than the CGIs,
+         # make sure this still points to the CGIs.
+-        'cgi_path'    => $libpath,
+-        'templatedir' => "$libpath/template",
++        'cgi_path'    => "$basepath/www",
++        'templatedir' => "$basepath/template",
+         'project'     => $project,
+-        'localconfig' => "$libpath/$localconfig",
+-        'datadir'     => "$libpath/$datadir",
+-        'attachdir'   => "$libpath/$datadir/attachments",
+-        'skinsdir'    => "$libpath/skins",
+-        'graphsdir'   => "$libpath/graphs",
++        'localconfig' => "$localconfig",
++        'datadir'     => "$datadir",
++        'attachdir'   => "$datadir/attachments",
++        'skinsdir'    => "$basepath/www/skins",
++        'graphsdir'   => "$datadir/graphs",
+         # $webdotdir must be in the web server's tree somewhere. Even if you use a 
+         # local dot, we output images to there. Also, if $webdotdir is 
+         # not relative to the bugzilla root directory, you'll need to 
+         # change showdependencygraph.cgi to set image_url to the correct 
+         # location.
+         # The script should really generate these graphs directly...
+-        'webdotdir'   => "$libpath/$datadir/webdot",
+-        'extensionsdir' => "$libpath/extensions",
++        'webdotdir'   => "$datadir/webdot",
++        'extensionsdir' => "$basepath/extensions",
+     };
+ }
+ 
+diff -Naurp bugzilla-4.0/Bugzilla/Install/Localconfig.pm bugzilla-4.0.oden/Bugzilla/Install/Localconfig.pm
+--- bugzilla-4.0/Bugzilla/Install/Localconfig.pm	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/Bugzilla/Install/Localconfig.pm	2011-02-18 13:50:50.549890564 +0100
+@@ -49,7 +49,7 @@ our @EXPORT_OK = qw(
+ use constant LOCALCONFIG_VARS => (
+     {
+         name    => 'create_htaccess',
+-        default => 1,
++        default => 0,
+         desc    => <<EOT
+ # If you are using Apache as your web server, Bugzilla can create .htaccess
+ # files for you that will instruct Apache not to serve files that shouldn't
+diff -Naurp bugzilla-4.0/chart.cgi bugzilla-4.0.oden/chart.cgi
+--- bugzilla-4.0/chart.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/chart.cgi	2011-02-18 13:50:50.550890774 +0100
+@@ -44,7 +44,7 @@
+ # Offer subscription when you get a "series already exists" error?
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/checksetup.pl bugzilla-4.0.oden/checksetup.pl
+--- bugzilla-4.0/checksetup.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/checksetup.pl	2011-02-18 13:50:50.550890774 +0100
+@@ -49,8 +49,7 @@ use Getopt::Long qw(:config bundling);
+ use Pod::Usage;
+ use Safe;
+ 
+-BEGIN { chdir dirname($0); }
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ use Bugzilla::Constants;
+ use Bugzilla::Install::Requirements;
+ use Bugzilla::Install::Util qw(install_string get_version_and_os init_console);
+diff -Naurp bugzilla-4.0/colchange.cgi bugzilla-4.0.oden/colchange.cgi
+--- bugzilla-4.0/colchange.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/colchange.cgi	2011-02-18 13:52:19.271503812 +0100
+@@ -24,7 +24,7 @@
+ #                 Pascal Held <paheld@gmail.com>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/collectstats.pl bugzilla-4.0.oden/collectstats.pl
+--- bugzilla-4.0/collectstats.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/collectstats.pl	2011-02-18 13:50:50.552891194 +0100
+@@ -31,7 +31,7 @@
+ # ISO (2004-08-14) format.
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use List::Util qw(first);
+ use Cwd;
+@@ -44,6 +44,7 @@ use Bugzilla::Search;
+ use Bugzilla::User;
+ use Bugzilla::Product;
+ use Bugzilla::Field;
++use Bugzilla::Error;
+ 
+ # Turn off output buffering (probably needed when displaying output feedback
+ # in the regenerate mode).
+diff -Naurp bugzilla-4.0/config.cgi bugzilla-4.0.oden/config.cgi
+--- bugzilla-4.0/config.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/config.cgi	2011-02-18 13:50:50.553891404 +0100
+@@ -28,8 +28,7 @@
+ 
+ # Make it harder for us to do dangerous things in Perl.
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/contrib/bzdbcopy.pl bugzilla-4.0.oden/contrib/bzdbcopy.pl
+--- bugzilla-4.0/contrib/bzdbcopy.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/contrib/bzdbcopy.pl	2011-02-18 13:50:50.553891404 +0100
+@@ -19,7 +19,7 @@
+ # Contributor(s): Max Kanat-Alexander <mkanat@bugzilla.org>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ use Bugzilla;
+ use Bugzilla::Constants;
+ use Bugzilla::DB;
+diff -Naurp bugzilla-4.0/contrib/bz_webservice_demo.pl bugzilla-4.0.oden/contrib/bz_webservice_demo.pl
+--- bugzilla-4.0/contrib/bz_webservice_demo.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/contrib/bz_webservice_demo.pl	2011-02-18 13:50:50.554891614 +0100
+@@ -29,7 +29,7 @@ C<bz_webservice_demo.pl --help> for deta
+ =cut
+ 
+ use strict;
+-use lib qw(lib);
++use lib '/usr/share/bugzilla/lib';
+ use Getopt::Long;
+ use Pod::Usage;
+ use File::Basename qw(dirname);
+diff -Naurp bugzilla-4.0/contrib/cmdline/makequery bugzilla-4.0.oden/contrib/cmdline/makequery
+--- bugzilla-4.0/contrib/cmdline/makequery	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/contrib/cmdline/makequery	2011-02-18 13:50:50.555891824 +0100
+@@ -19,7 +19,7 @@
+ #
+ # Contributor(s): 
+ 
+-conf="`dirname $0`/query.conf"
++conf='/etc/bugzilla/query.conf'
+ 
+ query="https://bugzilla.mozilla.org/buglist.cgi?ctype=csv"
+ 
+diff -Naurp bugzilla-4.0/contrib/console.pl bugzilla-4.0.oden/contrib/console.pl
+--- bugzilla-4.0/contrib/console.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/contrib/console.pl	2011-02-18 13:50:50.555891824 +0100
+@@ -21,8 +21,7 @@
+ # Contributor(s): Jesse Clark <jjclark1982@gmail.com>
+ 
+ use File::Basename;
+-BEGIN { chdir dirname($0) . "/.."; }
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/contrib/convert-workflow.pl bugzilla-4.0.oden/contrib/convert-workflow.pl
+--- bugzilla-4.0/contrib/convert-workflow.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/contrib/convert-workflow.pl	2011-02-18 13:53:41.206693292 +0100
+@@ -21,7 +21,7 @@
+ 
+ use strict;
+ use warnings;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Config qw(:admin);
+diff -Naurp bugzilla-4.0/contrib/extension-convert.pl bugzilla-4.0.oden/contrib/extension-convert.pl
+--- bugzilla-4.0/contrib/extension-convert.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/contrib/extension-convert.pl	2011-02-18 13:50:50.556892034 +0100
+@@ -21,7 +21,7 @@
+ 
+ use strict;
+ use warnings;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/contrib/fixperms.pl bugzilla-4.0.oden/contrib/fixperms.pl
+--- bugzilla-4.0/contrib/fixperms.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/contrib/fixperms.pl	2011-02-18 13:50:50.556892034 +0100
+@@ -21,7 +21,7 @@
+ 
+ use strict;
+ use warnings;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Install::Filesystem qw(fix_all_file_permissions);
+diff -Naurp bugzilla-4.0/contrib/merge-users.pl bugzilla-4.0.oden/contrib/merge-users.pl
+--- bugzilla-4.0/contrib/merge-users.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/contrib/merge-users.pl	2011-02-18 13:50:50.556892034 +0100
+@@ -44,7 +44,7 @@ merge-users.pl - Merge two user accounts
+ 
+ =cut
+ 
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/contrib/recode.pl bugzilla-4.0.oden/contrib/recode.pl
+--- bugzilla-4.0/contrib/recode.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/contrib/recode.pl	2011-02-18 13:50:50.557892244 +0100
+@@ -20,7 +20,7 @@
+ # Contributor(s): Max Kanat-Alexander <mkanat@bugzilla.org>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/contrib/sendbugmail.pl bugzilla-4.0.oden/contrib/sendbugmail.pl
+--- bugzilla-4.0/contrib/sendbugmail.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/contrib/sendbugmail.pl	2011-02-18 13:50:50.557892244 +0100
+@@ -12,7 +12,7 @@
+ # 
+ # Usage: perl -T contrib/sendbugmail.pl bug_id user_email
+ 
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Util;
+diff -Naurp bugzilla-4.0/contrib/sendunsentbugmail.pl bugzilla-4.0.oden/contrib/sendunsentbugmail.pl
+--- bugzilla-4.0/contrib/sendunsentbugmail.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/contrib/sendunsentbugmail.pl	2011-02-18 13:50:50.558892454 +0100
+@@ -22,8 +22,7 @@
+ #                 Myk Melez <myk@mozilla.org>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/contrib/syncLDAP.pl bugzilla-4.0.oden/contrib/syncLDAP.pl
+--- bugzilla-4.0/contrib/syncLDAP.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/contrib/syncLDAP.pl	2011-02-18 13:50:50.558892454 +0100
+@@ -21,8 +21,7 @@
+ #
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Net::LDAP;
+ use Bugzilla;
+diff -Naurp bugzilla-4.0/createaccount.cgi bugzilla-4.0.oden/createaccount.cgi
+--- bugzilla-4.0/createaccount.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/createaccount.cgi	2011-02-18 13:50:50.559892664 +0100
+@@ -25,8 +25,7 @@
+ #                 Gervase Markham <gerv@gerv.net>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/describecomponents.cgi bugzilla-4.0.oden/describecomponents.cgi
+--- bugzilla-4.0/describecomponents.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/describecomponents.cgi	2011-02-18 13:50:50.559892664 +0100
+@@ -23,7 +23,7 @@
+ #                 Frédéric Buclin <LpSolit@gmail.com>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/describekeywords.cgi bugzilla-4.0.oden/describekeywords.cgi
+--- bugzilla-4.0/describekeywords.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/describekeywords.cgi	2011-02-18 13:50:50.560892874 +0100
+@@ -22,7 +22,7 @@
+ # Contributor(s): Gervase Markham <gerv@gerv.net>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Error;
+diff -Naurp bugzilla-4.0/duplicates.cgi bugzilla-4.0.oden/duplicates.cgi
+--- bugzilla-4.0/duplicates.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/duplicates.cgi	2011-02-18 13:50:50.560892874 +0100
+@@ -23,7 +23,7 @@
+ #   Max Kanat-Alexander <mkanat@bugzilla.org>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/editclassifications.cgi bugzilla-4.0.oden/editclassifications.cgi
+--- bugzilla-4.0/editclassifications.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editclassifications.cgi	2011-02-18 13:50:50.561893084 +0100
+@@ -21,7 +21,7 @@
+ 
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/editcomponents.cgi bugzilla-4.0.oden/editcomponents.cgi
+--- bugzilla-4.0/editcomponents.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editcomponents.cgi	2011-02-18 13:50:50.561893084 +0100
+@@ -24,7 +24,7 @@
+ #                 Akamai Technologies <bugzilla-dev@akamai.com>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/editfields.cgi bugzilla-4.0.oden/editfields.cgi
+--- bugzilla-4.0/editfields.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editfields.cgi	2011-02-18 13:50:50.562893294 +0100
+@@ -16,7 +16,7 @@
+ # Contributor(s): Frédéric Buclin <LpSolit@gmail.com>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/editflagtypes.cgi bugzilla-4.0.oden/editflagtypes.cgi
+--- bugzilla-4.0/editflagtypes.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editflagtypes.cgi	2011-02-18 13:50:50.562893294 +0100
+@@ -27,7 +27,7 @@
+ 
+ # Make it harder for us to do dangerous things in Perl.
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ # Use Bugzilla's flag modules for handling flag types.
+ use Bugzilla;
+diff -Naurp bugzilla-4.0/editgroups.cgi bugzilla-4.0.oden/editgroups.cgi
+--- bugzilla-4.0/editgroups.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editgroups.cgi	2011-02-18 13:50:50.563893504 +0100
+@@ -25,7 +25,7 @@
+ #                 Frédéric Buclin <LpSolit@gmail.com>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/editkeywords.cgi bugzilla-4.0.oden/editkeywords.cgi
+--- bugzilla-4.0/editkeywords.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editkeywords.cgi	2011-02-18 13:50:50.563893504 +0100
+@@ -21,7 +21,7 @@
+ # Contributor(s): Terry Weissman <terry@mozilla.org>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/editmilestones.cgi bugzilla-4.0.oden/editmilestones.cgi
+--- bugzilla-4.0/editmilestones.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editmilestones.cgi	2011-02-18 13:50:50.563893504 +0100
+@@ -20,7 +20,7 @@
+ #                Frédéric Buclin <LpSolit@gmail.com>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/editparams.cgi bugzilla-4.0.oden/editparams.cgi
+--- bugzilla-4.0/editparams.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editparams.cgi	2011-02-18 13:50:50.564893713 +0100
+@@ -23,7 +23,7 @@
+ #                 Frédéric Buclin <LpSolit@gmail.com>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/editproducts.cgi bugzilla-4.0.oden/editproducts.cgi
+--- bugzilla-4.0/editproducts.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editproducts.cgi	2011-02-18 13:50:50.564893713 +0100
+@@ -29,7 +29,7 @@
+ #               Elliotte Martin <elliotte.martin@yahoo.com>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/editsettings.cgi bugzilla-4.0.oden/editsettings.cgi
+--- bugzilla-4.0/editsettings.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editsettings.cgi	2011-02-18 13:50:50.564893713 +0100
+@@ -17,7 +17,7 @@
+ #                 Frédéric Buclin <LpSolit@gmail.com>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/editusers.cgi bugzilla-4.0.oden/editusers.cgi
+--- bugzilla-4.0/editusers.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editusers.cgi	2011-02-18 13:50:50.565893922 +0100
+@@ -21,7 +21,7 @@
+ #                 Gavin Shelley  <bugzilla@chimpychompy.org>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/editvalues.cgi bugzilla-4.0.oden/editvalues.cgi
+--- bugzilla-4.0/editvalues.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editvalues.cgi	2011-02-18 13:50:50.565893922 +0100
+@@ -19,7 +19,7 @@
+ # with some cleanup.
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Util;
+diff -Naurp bugzilla-4.0/editversions.cgi bugzilla-4.0.oden/editversions.cgi
+--- bugzilla-4.0/editversions.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editversions.cgi	2011-02-18 13:50:50.566894132 +0100
+@@ -24,7 +24,7 @@
+ #                 Frédéric Buclin <LpSolit@gmail.com>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/editwhines.cgi bugzilla-4.0.oden/editwhines.cgi
+--- bugzilla-4.0/editwhines.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editwhines.cgi	2011-02-18 13:50:50.566894132 +0100
+@@ -26,8 +26,7 @@
+ ################################################################################
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/editworkflow.cgi bugzilla-4.0.oden/editworkflow.cgi
+--- bugzilla-4.0/editworkflow.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/editworkflow.cgi	2011-02-18 13:50:50.567894342 +0100
+@@ -20,8 +20,7 @@
+ # Contributor(s): Frédéric Buclin <LpSolit@gmail.com>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/email_in.pl bugzilla-4.0.oden/email_in.pl
+--- bugzilla-4.0/email_in.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/email_in.pl	2011-02-18 13:50:50.567894342 +0100
+@@ -21,18 +21,7 @@
+ 
+ use strict;
+ use warnings;
+-
+-# MTAs may call this script from any directory, but it should always
+-# run from this one so that it can find its modules.
+-use Cwd qw(abs_path);
+-use File::Basename qw(dirname);
+-BEGIN {
+-    # Untaint the abs_path.
+-    my ($a) = abs_path($0) =~ /^(.*)$/;
+-    chdir dirname($a);
+-}
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Data::Dumper;
+ use Email::Address;
+diff -Naurp bugzilla-4.0/enter_bug.cgi bugzilla-4.0.oden/enter_bug.cgi
+--- bugzilla-4.0/enter_bug.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/enter_bug.cgi	2011-02-18 13:50:50.568894552 +0100
+@@ -35,8 +35,7 @@
+ ##############################################################################
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/extensions/create.pl bugzilla-4.0.oden/extensions/create.pl
+--- bugzilla-4.0/extensions/create.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/extensions/create.pl	2011-02-18 13:50:50.568894552 +0100
+@@ -20,7 +20,7 @@
+ #   Max Kanat-Alexander <mkanat@bugzilla.org>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ use Bugzilla;
+ use Bugzilla::Constants;
+ use Bugzilla::Error;
+diff -Naurp bugzilla-4.0/importxml.pl bugzilla-4.0.oden/importxml.pl
+--- bugzilla-4.0/importxml.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/importxml.pl	2011-02-18 13:50:50.569894762 +0100
+@@ -54,16 +54,7 @@ use strict;
+ #
+ #####################################################################
+ 
+-use File::Basename qw(dirname);
+-# MTAs may call this script from any directory, but it should always
+-# run from this one so that it can find its modules.
+-BEGIN {
+-    require File::Basename;
+-    my $dir = $0; $dir =~ /(.*)/; $dir = $1; # trick taint
+-    chdir(File::Basename::dirname($dir));
+-}
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ # Data dumber is used for debugging, I got tired of copying it back in 
+ # and then removing it. 
+ #use Data::Dumper;
+diff -Naurp bugzilla-4.0/index.cgi bugzilla-4.0.oden/index.cgi
+--- bugzilla-4.0/index.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/index.cgi	2011-02-18 13:50:50.569894762 +0100
+@@ -29,7 +29,7 @@
+ use strict;
+ 
+ # Include the Bugzilla CGI and general utility library.
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/install-module.pl bugzilla-4.0.oden/install-module.pl
+--- bugzilla-4.0/install-module.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/install-module.pl	2011-02-18 13:50:50.569894762 +0100
+@@ -22,14 +22,7 @@
+ use strict;
+ use warnings;
+ 
+-# Have to abs_path('.') or calls to Bugzilla modules won't work once
+-# CPAN has chdir'ed around. We do all of this in this funny order to
+-# make sure that we use the lib/ modules instead of the base Perl modules,
+-# in case the lib/ modules are newer.
+-use Cwd qw(abs_path cwd);
+-use lib abs_path('.');
+-use Bugzilla::Constants;
+-use lib abs_path(bz_locations()->{ext_libpath});
+++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla::Install::CPAN;
+ 
+diff -Naurp bugzilla-4.0/jobqueue.pl bugzilla-4.0.oden/jobqueue.pl
+--- bugzilla-4.0/jobqueue.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/jobqueue.pl	2011-02-18 13:50:50.570894972 +0100
+@@ -23,9 +23,8 @@
+ 
+ use strict;
+ use File::Basename;
+-BEGIN { chdir dirname($0); }
+ 
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ use Bugzilla;
+ use Bugzilla::JobQueue::Runner;
+ 
+diff -Naurp bugzilla-4.0/jsonrpc.cgi bugzilla-4.0.oden/jsonrpc.cgi
+--- bugzilla-4.0/jsonrpc.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/jsonrpc.cgi	2011-02-18 13:50:50.570894972 +0100
+@@ -21,7 +21,7 @@
+ #   Max Kanat-Alexander <mkanat@bugzilla.org>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/long_list.cgi bugzilla-4.0.oden/long_list.cgi
+--- bugzilla-4.0/long_list.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/long_list.cgi	2011-02-18 13:50:50.570894972 +0100
+@@ -22,7 +22,7 @@
+ #                 Gervase Markham <gerv@gerv.net>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ use Bugzilla;
+ 
+ my $cgi = Bugzilla->cgi;
+diff -Naurp bugzilla-4.0/migrate.pl bugzilla-4.0.oden/migrate.pl
+--- bugzilla-4.0/migrate.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/migrate.pl	2011-02-18 13:50:50.571895182 +0100
+@@ -21,9 +21,8 @@
+ #   Max Kanat-Alexander <mkanat@bugzilla.org>
+ 
+ use strict;
++use lib '/usr/share/bugzilla/lib';
+ use File::Basename;
+-BEGIN { chdir dirname($0); }
+-use lib qw(. lib);
+ use Bugzilla;
+ use Bugzilla::Migrate;
+ 
+@@ -107,4 +106,4 @@ the size of all attachments in your curr
+ You may also need to increase the number of file handles a process is allowed
+ to hold open (as the migrator will create a file handle for each attachment
+ in your database). On Linux and simliar systems, you can do this as root
+-by typing C<ulimit -n 65535> before running your script.
+\ Ingen nyrad vid filslut
++by typing C<ulimit -n 65535> before running your script.
+diff -Naurp bugzilla-4.0/page.cgi bugzilla-4.0.oden/page.cgi
+--- bugzilla-4.0/page.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/page.cgi	2011-02-18 13:50:50.571895182 +0100
+@@ -29,8 +29,7 @@
+ ###############################################################################
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Error;
+diff -Naurp bugzilla-4.0/post_bug.cgi bugzilla-4.0.oden/post_bug.cgi
+--- bugzilla-4.0/post_bug.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/post_bug.cgi	2011-02-18 13:50:50.572895392 +0100
+@@ -25,7 +25,7 @@
+ #                 Marc Schumann <wurblzap@gmail.com>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Attachment;
+diff -Naurp bugzilla-4.0/process_bug.cgi bugzilla-4.0.oden/process_bug.cgi
+--- bugzilla-4.0/process_bug.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/process_bug.cgi	2011-02-18 13:50:50.572895392 +0100
+@@ -42,8 +42,7 @@
+ # later processing.
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/query.cgi bugzilla-4.0.oden/query.cgi
+--- bugzilla-4.0/query.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/query.cgi	2011-02-18 13:50:50.572895392 +0100
+@@ -26,7 +26,7 @@
+ #                 Max Kanat-Alexander <mkanat@bugzilla.org>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Bug;
+diff -Naurp bugzilla-4.0/quips.cgi bugzilla-4.0.oden/quips.cgi
+--- bugzilla-4.0/quips.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/quips.cgi	2011-02-18 13:50:50.573895602 +0100
+@@ -24,8 +24,7 @@
+ #                 Tobias Burnus <burnus@net-b.de>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/relogin.cgi bugzilla-4.0.oden/relogin.cgi
+--- bugzilla-4.0/relogin.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/relogin.cgi	2011-02-18 13:50:50.574895812 +0100
+@@ -23,7 +23,7 @@
+ #                 A. Karl Kornel <karl@kornel.name>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Mailer;
+diff -Naurp bugzilla-4.0/report.cgi bugzilla-4.0.oden/report.cgi
+--- bugzilla-4.0/report.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/report.cgi	2011-02-18 13:50:50.574895812 +0100
+@@ -22,7 +22,7 @@
+ #                 <rdean@cambianetworks.com>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/reports.cgi bugzilla-4.0.oden/reports.cgi
+--- bugzilla-4.0/reports.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/reports.cgi	2011-02-18 13:50:50.575896022 +0100
+@@ -36,8 +36,7 @@
+ #    Templatization.
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/request.cgi bugzilla-4.0.oden/request.cgi
+--- bugzilla-4.0/request.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/request.cgi	2011-02-18 13:50:50.575896022 +0100
+@@ -27,8 +27,7 @@
+ 
+ # Make it harder for us to do dangerous things in Perl.
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Util;
+diff -Naurp bugzilla-4.0/runtests.pl bugzilla-4.0.oden/runtests.pl
+--- bugzilla-4.0/runtests.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/runtests.pl	2011-02-18 13:50:50.576896232 +0100
+@@ -23,7 +23,7 @@
+ # Make it harder for us to do dangerous things in Perl.
+ use diagnostics;
+ use strict;
+-use lib qw(lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Test::Harness qw(&runtests $verbose);
+ 
+diff -Naurp bugzilla-4.0/sanitycheck.cgi bugzilla-4.0.oden/sanitycheck.cgi
+--- bugzilla-4.0/sanitycheck.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/sanitycheck.cgi	2011-02-18 13:50:50.576896232 +0100
+@@ -25,8 +25,7 @@
+ #                 Frédéric Buclin <LpSolit@gmail.com>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Bug;
+diff -Naurp bugzilla-4.0/sanitycheck.pl bugzilla-4.0.oden/sanitycheck.pl
+--- bugzilla-4.0/sanitycheck.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/sanitycheck.pl	2011-02-18 13:50:50.577896441 +0100
+@@ -20,8 +20,7 @@
+ # Contributor(s): Frédéric Buclin <LpSolit@gmail.com>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/search_plugin.cgi bugzilla-4.0.oden/search_plugin.cgi
+--- bugzilla-4.0/search_plugin.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/search_plugin.cgi	2011-02-18 13:50:50.577896441 +0100
+@@ -16,7 +16,7 @@
+ # Contributor(s): Frédéric Buclin <LpSolit@gmail.com>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Error;
+diff -Naurp bugzilla-4.0/show_activity.cgi bugzilla-4.0.oden/show_activity.cgi
+--- bugzilla-4.0/show_activity.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/show_activity.cgi	2011-02-18 13:50:50.577896441 +0100
+@@ -23,8 +23,7 @@
+ #                 Gervase Markham <gerv@gerv.net>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Error;
+diff -Naurp bugzilla-4.0/showattachment.cgi bugzilla-4.0.oden/showattachment.cgi
+--- bugzilla-4.0/showattachment.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/showattachment.cgi	2011-02-18 13:50:50.578896650 +0100
+@@ -22,8 +22,7 @@
+ #                 Jacob Steenhagen <jake@bugzilla.org>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Util;
+diff -Naurp bugzilla-4.0/show_bug.cgi bugzilla-4.0.oden/show_bug.cgi
+--- bugzilla-4.0/show_bug.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/show_bug.cgi	2011-02-18 13:50:50.578896650 +0100
+@@ -21,8 +21,7 @@
+ # Contributor(s): Terry Weissman <terry@mozilla.org>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/showdependencygraph.cgi bugzilla-4.0.oden/showdependencygraph.cgi
+--- bugzilla-4.0/showdependencygraph.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/showdependencygraph.cgi	2011-02-18 13:50:50.578896650 +0100
+@@ -22,8 +22,7 @@
+ #                 Gervase Markham <gerv@gerv.net>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use File::Temp;
+ 
+diff -Naurp bugzilla-4.0/showdependencytree.cgi bugzilla-4.0.oden/showdependencytree.cgi
+--- bugzilla-4.0/showdependencytree.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/showdependencytree.cgi	2011-02-18 13:50:50.579896860 +0100
+@@ -25,8 +25,7 @@
+ #                 Frédéric Buclin <LpSolit@gmail.com>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Error;
+diff -Naurp bugzilla-4.0/sidebar.cgi bugzilla-4.0.oden/sidebar.cgi
+--- bugzilla-4.0/sidebar.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/sidebar.cgi	2011-02-18 13:50:50.579896860 +0100
+@@ -16,8 +16,7 @@
+ # Contributor(s): Jacob Steenhagen <jake@bugzilla.org>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Error;
+diff -Naurp bugzilla-4.0/summarize_time.cgi bugzilla-4.0.oden/summarize_time.cgi
+--- bugzilla-4.0/summarize_time.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/summarize_time.cgi	2011-02-18 13:50:50.579896860 +0100
+@@ -18,8 +18,7 @@
+ #                 Frédéric Buclin <LpSolit@gmail.com>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Date::Parse;         # strptime
+ 
+diff -Naurp bugzilla-4.0/testserver.pl bugzilla-4.0.oden/testserver.pl
+--- bugzilla-4.0/testserver.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/testserver.pl	2011-02-18 13:50:50.580897070 +0100
+@@ -19,7 +19,7 @@
+ # issues as possible.
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/token.cgi bugzilla-4.0.oden/token.cgi
+--- bugzilla-4.0/token.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/token.cgi	2011-02-18 13:50:50.580897070 +0100
+@@ -27,8 +27,7 @@
+ 
+ # Make it harder for us to do dangerous things in Perl.
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/userprefs.cgi bugzilla-4.0.oden/userprefs.cgi
+--- bugzilla-4.0/userprefs.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/userprefs.cgi	2011-02-18 13:50:50.581897280 +0100
+@@ -23,8 +23,7 @@
+ #                 Shane H. W. Travis <travis@sedsystems.ca>
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::BugMail;
+diff -Naurp bugzilla-4.0/whineatnews.pl bugzilla-4.0.oden/whineatnews.pl
+--- bugzilla-4.0/whineatnews.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/whineatnews.pl	2011-02-18 13:50:50.582897490 +0100
+@@ -31,7 +31,7 @@
+ # Bugzillas.)
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Mailer;
+diff -Naurp bugzilla-4.0/whine.pl bugzilla-4.0.oden/whine.pl
+--- bugzilla-4.0/whine.pl	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/whine.pl	2011-02-18 13:50:50.582897490 +0100
+@@ -25,8 +25,7 @@
+ ################################################################################
+ 
+ use strict;
+-
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
+diff -Naurp bugzilla-4.0/votes.cgi bugzilla-4.0.oden/votes.cgi
+--- bugzilla-4.0/votes.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/votes.cgi	2011-02-18 13:51:51.175609469 +0100
+@@ -24,7 +24,7 @@
+ # the time that Voting was an extension.
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ use Bugzilla;
+ use Bugzilla::Error;
+ 
+diff -Naurp bugzilla-4.0/xml.cgi bugzilla-4.0.oden/xml.cgi
+--- bugzilla-4.0/xml.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/xml.cgi	2011-02-18 13:50:50.583897700 +0100
+@@ -23,8 +23,8 @@
+ #                 Gervase Markham <gerv@gerv.net>
+ 
+ use strict;
++use lib '/usr/share/bugzilla/lib';
+ 
+-use lib qw(. lib);
+ use Bugzilla;
+ 
+ my $cgi = Bugzilla->cgi;
+diff -Naurp bugzilla-4.0/xmlrpc.cgi bugzilla-4.0.oden/xmlrpc.cgi
+--- bugzilla-4.0/xmlrpc.cgi	2011-02-15 18:22:05.000000000 +0100
++++ bugzilla-4.0.oden/xmlrpc.cgi	2011-02-18 13:50:50.583897700 +0100
+@@ -16,7 +16,7 @@
+ # Contributor(s): Marc Schumann <wurblzap@gmail.com>
+ 
+ use strict;
+-use lib qw(. lib);
++use lib '/usr/share/bugzilla/lib';
+ 
+ use Bugzilla;
+ use Bugzilla::Constants;
