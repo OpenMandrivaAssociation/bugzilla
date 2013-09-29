@@ -137,12 +137,11 @@ install -d -m 755 %{buildroot}%{_sysconfdir}/%{name}
 install -d -m 755 %{buildroot}%{_webappconfdir}
 cat > %{buildroot}%{_webappconfdir}/%{name}.conf <<EOF
 # Bugzilla Apache configuration
-Alias /bugzilla/data %{_localstatedir}/lib/bugzilla/
-Alias /%{name} %{_datadir}/%{name}/www
+Alias /bugzilla/data /var/lib/bugzilla/
+Alias /bugzilla /usr/share/bugzilla/www
 
-<Directory %{_datadir}/%{name}/www>
-    Order allow,deny
-    Allow from all
+<Directory /usr/share/bugzilla/www>
+    Require all granted
 
     Options ExecCGI
     DirectoryIndex index.cgi
@@ -150,25 +149,21 @@ Alias /%{name} %{_datadir}/%{name}/www
 
 # The duplicates.rdf must be accessible, as it is used by
 # duplicates.xul
-<Directory %{_localstatedir}/lib/bugzilla>
+<Directory /var/lib/bugzilla>
     <Files duplicates.rdf>
-        Order allow,deny
-        Allow from all
+        Require all granted
     </Files>
 </Directory>
 
 # The dot files must be accessible to the public webdot server
 # The png files locally created locally must be accessible
-<Directory %{_localstatedir}/lib/bugzilla/webdot>
+<Directory /var/lib/bugzilla/webdot>
     <FilesMatch \.dot$>
-        Order deny,allow
-        Deny from all
-        Allow from research.att.com
+        Require host research.att.com
     </FilesMatch>
 
     <FilesMatch \.png$>
-        Order allow,deny
-        Allow from all
+        Require all granted
     </FilesMatch>
 </Directory>
 EOF
