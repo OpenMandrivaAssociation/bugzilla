@@ -141,8 +141,7 @@ Alias /bugzilla/data %{_localstatedir}/lib/bugzilla/
 Alias /%{name} %{_datadir}/%{name}/www
 
 <Directory %{_datadir}/%{name}/www>
-    Order allow,deny
-    Allow from all
+    Require all granted
 
     Options ExecCGI
     DirectoryIndex index.cgi
@@ -152,8 +151,7 @@ Alias /%{name} %{_datadir}/%{name}/www
 # duplicates.xul
 <Directory %{_localstatedir}/lib/bugzilla>
     <Files duplicates.rdf>
-        Order allow,deny
-        Allow from all
+        Require all granted
     </Files>
 </Directory>
 
@@ -161,14 +159,11 @@ Alias /%{name} %{_datadir}/%{name}/www
 # The png files locally created locally must be accessible
 <Directory %{_localstatedir}/lib/bugzilla/webdot>
     <FilesMatch \.dot$>
-        Order deny,allow
-        Deny from all
-        Allow from research.att.com
+        Require host research.att.com
     </FilesMatch>
 
     <FilesMatch \.png$>
-        Order allow,deny
-        Allow from all
+        Require all granted
     </FilesMatch>
 </Directory>
 EOF
