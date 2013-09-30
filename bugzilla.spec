@@ -8,7 +8,7 @@
 
 Name:		bugzilla
 Version:	4.0.1
-Release:	7
+Release:	8
 
 Summary:	A bug tracking system developed by mozilla.org
 License:	MPL
