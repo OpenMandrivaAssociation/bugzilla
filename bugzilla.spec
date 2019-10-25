@@ -7,18 +7,18 @@
 %endif
 
 Name:		bugzilla
-Version:	4.0.1
-Release:	10
+Version:	5.0.6
+Release:	1
 
 Summary:	A bug tracking system developed by mozilla.org
 License:	MPL
 Group:		Networking/WWW
 Url:		http://www.bugzilla.org
 Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
-Patch0:		%{name}-3.6.3-fhs.patch
-Patch1:		%{name}-4.0.1-dont-mess-file-perms.patch
+#Patch0:		%{name}-3.6.3-fhs.patch
+#Patch1:		%{name}-4.0.1-dont-mess-file-perms.patch
 # https://bugzilla.mozilla.org/show_bug.cgi?id=392482
-Patch2:		%{name}-3.6-extern-id.patch
+#Patch2:		%{name}-3.6-extern-id.patch
 Requires:	apache
 Requires:	perl(CGI) >= 1:3.500.0
 Requires:	perl(Date::Format) >= 2.21
@@ -59,9 +59,9 @@ This package contains additional tools for %{name}.
 
 %prep
 %setup -q
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
+#patch0 -p1
+#patch1 -p1
+#patch2 -p1
 find . -name CVS -o -name .cvsignore | xargs rm -rf
 
 # fix perms
