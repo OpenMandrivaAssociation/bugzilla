@@ -115,7 +115,7 @@ install -m 755 collectstats.pl \
 	contrib/cmdline/buglist \
 	contrib/cmdline/bugs \
 	%{buildroot}%{_datadir}/%{name}/bin
-cp -p bugzilla.dtd %{buildroot}%{_datadir}/%{name}
+#cp -p bugzilla.dtd %{buildroot}%{_datadir}/%{name}
 
 install -d -m 755 %{buildroot}%{_localstatedir}/lib/%{name}
 install -d -m 755 %{buildroot}%{_sysconfdir}/%{name}
