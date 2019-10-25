@@ -1,10 +1,51 @@
-%if %{_use_internal_dependency_generator}
 %define __noautoprov 'perl(.*)'
 %define __noautoreq 'perl\\(XML::Twig\\)|perl\\(MIME::Parser\\)|perl\\(Bugzilla.*\\)|perl\\(DBD::.*\\)|perl\\(DBI::st\\)|perl\\(DBI::db\\)|perl\\(TheSchwartz\\)'
-%else
 %define _provides_exceptions perl(.*)
 %define _requires_exceptions perl(\\(XML::Twig\\|MIME::Parser\\|Bugzilla.*\\|DBD::.*\\|DBI::st\\))
-%endif
+# Remove private modules from the requires stream
+%global __requires_exclude %__requires_exclude|^perl\\(sanitycheck.cgi\\)$
+%global __requires_exclude %__requires_exclude|^perl\\(Bugzilla\\)$
+%global __requires_exclude %__requires_exclude|^perl\\(Bugzilla::
+
+# Remove all optional modules from the requires stream
+# mod_perl modules
+%global __requires_exclude %__requires_exclude|^perl\\(Apache2::
+%global __requires_exclude %__requires_exclude|^perl\\(ModPerl::
+# authentification modules
+%global __requires_exclude %__requires_exclude|^perl\\(Authen::Radius\\)$
+%global __requires_exclude %__requires_exclude|^perl\\(Net::LDAP\\)$
+# database modules
+%global __requires_exclude %__requires_exclude|^perl\\(DBD::Oracle\\)$
+%global __requires_exclude %__requires_exclude|^perl\\(DBD::Pg\\)$
+%global __requires_exclude %__requires_exclude|^perl\\(DBI::db\\)$
+%global __requires_exclude %__requires_exclude|^perl\\(DBI::st\\)$
+# inbound email modules
+%global __requires_exclude %__requires_exclude|^perl\\(Email::MIME::Attachment::Stripper\\)$
+%global __requires_exclude %__requires_exclude|^perl\\(Email::Reply\\)$
+# bug moving modules
+%global __requires_exclude %__requires_exclude|^perl\\(MIME::Parser\\)$
+%global __requires_exclude %__requires_exclude|^perl\\(XML::Twig\\)$
+# xml-rpc and json-rpc modules
+%global __requires_exclude %__requires_exclude|^perl\\(XMLRPC::
+%global __requires_exclude %__requires_exclude|^perl\\(HTTP::Message\\)$
+%global __requires_exclude %__requires_exclude|^perl\\(Test::Taint\\)$
+# mail queueing modules
+%global __requires_exclude %__requires_exclude|^perl\\(TheSchwartz\\)$
+# extension modules
+%global __requires_exclude %__requires_exclude|^perl\\(Image::Magick\\)$
+# contrib scripts
+%global __requires_exclude %__requires_exclude|^python
+
+# and remove the extensions from the provides stream
+%global __provides_exclude %__provides_exclude|^perl\\(Bugzilla::Extension::BmpConvert\\)$
+%global __provides_exclude %__provides_exclude|^perl\\(Bugzilla::Extension::Example\\)$
+%global __provides_exclude %__provides_exclude|^perl\\(Bugzilla::Extension::Example::Auth::Login\\)$
+%global __provides_exclude %__provides_exclude|^perl\\(Bugzilla::Extension::Example::Auth::Verify\\)$
+%global __provides_exclude %__provides_exclude|^perl\\(Bugzilla::Extension::Example::Config\\)$
+%global __provides_exclude %__provides_exclude|^perl\\(Bugzilla::Extension::Example::WebService\\)$
+%global __provides_exclude %__provides_exclude|^perl\\(Bugzilla::Extension::OldBugMove\\)$
+%global __provides_exclude %__provides_exclude|^perl\\(Bugzilla::Extension::OldBugMove::Params\\)$
+%global __provides_exclude %__provides_exclude|^perl\\(Bugzilla::Extension::Voting\\)$
 
 Name:		bugzilla
 Version:	5.0.6
