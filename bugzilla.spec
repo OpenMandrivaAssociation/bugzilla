@@ -104,16 +104,13 @@ install -m 755 collectstats.pl \
 	importxml.pl \
 	whineatnews.pl \
 	whine.pl \
-	contrib/bugzilla_ldapsync.rb \
 	contrib/bzdbcopy.pl \
-	contrib/cvs-update.pl \
 	contrib/jb2bz.py \
 	contrib/merge-users.pl \
 	contrib/mysqld-watcher.pl \
 	contrib/sendbugmail.pl \
 	contrib/sendunsentbugmail.pl \
 	contrib/syncLDAP.pl \
-	contrib/yp_nomail.sh \
 	contrib/bugzilla-submit/bugzilla-submit \
 	contrib/cmdline/buglist \
 	contrib/cmdline/bugs \
