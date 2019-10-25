@@ -197,14 +197,11 @@ EOF
 %{_datadir}/%{name}
 %{_sysconfdir}/%{name}
 %attr(-,apache,apache) %{_localstatedir}/lib/%{name}
-%exclude %{_datadir}/%{name}/bin/bugzilla_ldapsync.rb
-%exclude %{_datadir}/%{name}/bin/cvs-update.pl
 %exclude %{_datadir}/%{name}/bin/jb2bz.py
 %exclude %{_datadir}/%{name}/bin/mysqld-watcher.pl
 %exclude %{_datadir}/%{name}/bin/sendbugmail.pl
 %exclude %{_datadir}/%{name}/bin/sendunsentbugmail.pl
 %exclude %{_datadir}/%{name}/bin/syncLDAP.pl
-%exclude %{_datadir}/%{name}/bin/yp_nomail.sh
 %exclude %{_datadir}/%{name}/bin/bugzilla-submit
 %exclude %{_datadir}/%{name}/bin/buglist
 %exclude %{_datadir}/%{name}/bin/bugs
@@ -213,14 +210,11 @@ EOF
 %files contrib
 %doc contrib/README
 %doc contrib/bugzilla-submit/README.bugzilla-submit
-%{_datadir}/%{name}/bin/bugzilla_ldapsync.rb
-%{_datadir}/%{name}/bin/cvs-update.pl
 %{_datadir}/%{name}/bin/jb2bz.py
 %{_datadir}/%{name}/bin/mysqld-watcher.pl
 %{_datadir}/%{name}/bin/sendbugmail.pl
 %{_datadir}/%{name}/bin/sendunsentbugmail.pl
 %{_datadir}/%{name}/bin/syncLDAP.pl
-%{_datadir}/%{name}/bin/yp_nomail.sh
 %{_datadir}/%{name}/bin/bugzilla-submit
 %{_datadir}/%{name}/bin/buglist
 %{_datadir}/%{name}/bin/bugs
