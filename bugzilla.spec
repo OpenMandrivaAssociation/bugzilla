@@ -13,7 +13,7 @@ Release:	10
 Summary:	A bug tracking system developed by mozilla.org
 License:	MPL
 Group:		Networking/WWW
-Url:		http://www.bugzilla.org
+Url:		https://www.bugzilla.org
 Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
 Patch0:		%{name}-3.6.3-fhs.patch
 Patch1:		%{name}-4.0.1-dont-mess-file-perms.patch
