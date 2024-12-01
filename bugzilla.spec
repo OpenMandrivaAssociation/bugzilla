@@ -7,18 +7,14 @@
 %endif
 
 Name:		bugzilla
-Version:	4.0.1
-Release:	10
+Version:	5.2
+Release:	1
 
 Summary:	A bug tracking system developed by mozilla.org
 License:	MPL
 Group:		Networking/WWW
 Url:		https://www.bugzilla.org
-Source0:	ftp://ftp.mozilla.org/pub/mozilla.org/webtools/%{name}-%{version}.tar.gz
-Patch0:		%{name}-3.6.3-fhs.patch
-Patch1:		%{name}-4.0.1-dont-mess-file-perms.patch
-# https://bugzilla.mozilla.org/show_bug.cgi?id=392482
-Patch2:		%{name}-3.6-extern-id.patch
+Source0:	https://ftp.mozilla.org/pub/webtools/bugzilla/%(echo %{version}|cut -d. -f1-2)-branch/bugzilla-%{version}.tar.gz
 Requires:	apache
 Requires:	perl(CGI) >= 1:3.500.0
 Requires:	perl(Date::Format) >= 2.21
@@ -58,10 +54,7 @@ Group:		Networking/WWW
 This package contains additional tools for %{name}.
 
 %prep
-%setup -q
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
+%autosetup -p1
 find . -name CVS -o -name .cvsignore | xargs rm -rf
 
 # fix perms
@@ -104,21 +97,17 @@ install -m 755 collectstats.pl \
 	importxml.pl \
 	whineatnews.pl \
 	whine.pl \
-	contrib/bugzilla_ldapsync.rb \
 	contrib/bzdbcopy.pl \
-	contrib/cvs-update.pl \
 	contrib/jb2bz.py \
 	contrib/merge-users.pl \
 	contrib/mysqld-watcher.pl \
 	contrib/sendbugmail.pl \
 	contrib/sendunsentbugmail.pl \
 	contrib/syncLDAP.pl \
-	contrib/yp_nomail.sh \
 	contrib/bugzilla-submit/bugzilla-submit \
 	contrib/cmdline/buglist \
 	contrib/cmdline/bugs \
 	%{buildroot}%{_datadir}/%{name}/bin
-cp -p bugzilla.dtd %{buildroot}%{_datadir}/%{name}
 
 install -d -m 755 %{buildroot}%{_localstatedir}/lib/%{name}
 install -d -m 755 %{buildroot}%{_sysconfdir}/%{name}
@@ -200,14 +189,11 @@ EOF
 %{_datadir}/%{name}
 %{_sysconfdir}/%{name}
 %attr(-,apache,apache) %{_localstatedir}/lib/%{name}
-%exclude %{_datadir}/%{name}/bin/bugzilla_ldapsync.rb
-%exclude %{_datadir}/%{name}/bin/cvs-update.pl
 %exclude %{_datadir}/%{name}/bin/jb2bz.py
 %exclude %{_datadir}/%{name}/bin/mysqld-watcher.pl
 %exclude %{_datadir}/%{name}/bin/sendbugmail.pl
 %exclude %{_datadir}/%{name}/bin/sendunsentbugmail.pl
 %exclude %{_datadir}/%{name}/bin/syncLDAP.pl
-%exclude %{_datadir}/%{name}/bin/yp_nomail.sh
 %exclude %{_datadir}/%{name}/bin/bugzilla-submit
 %exclude %{_datadir}/%{name}/bin/buglist
 %exclude %{_datadir}/%{name}/bin/bugs
@@ -216,14 +202,11 @@ EOF
 %files contrib
 %doc contrib/README
 %doc contrib/bugzilla-submit/README.bugzilla-submit
-%{_datadir}/%{name}/bin/bugzilla_ldapsync.rb
-%{_datadir}/%{name}/bin/cvs-update.pl
 %{_datadir}/%{name}/bin/jb2bz.py
 %{_datadir}/%{name}/bin/mysqld-watcher.pl
 %{_datadir}/%{name}/bin/sendbugmail.pl
 %{_datadir}/%{name}/bin/sendunsentbugmail.pl
 %{_datadir}/%{name}/bin/syncLDAP.pl
-%{_datadir}/%{name}/bin/yp_nomail.sh
 %{_datadir}/%{name}/bin/bugzilla-submit
 %{_datadir}/%{name}/bin/buglist
 %{_datadir}/%{name}/bin/bugs
