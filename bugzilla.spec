@@ -8,7 +8,7 @@
 
 Name:		bugzilla
 Version:	5.2
-Release:	1
+Release:	2
 
 Summary:	A bug tracking system developed by mozilla.org
 License:	MPL
@@ -153,9 +153,9 @@ EOF
 # cron task
 install -d -m 755 %{buildroot}%{_sysconfdir}/cron.d
 cat > %{buildroot}%{_sysconfdir}/cron.d/%{name} <<EOF
-0 0 * * *     apache     %{_datadir}/%{name}/bin/collectstats.pl > /dev/null 2>&1
-0 0 * * *     apache     %{_datadir}/%{name}/bin/whineatnews.pl > /dev/null 2>&1
-*/15 * * * *     apache     %{_datadir}/%{name}/bin/whine.pl > /dev/null 2>&1
+0 0 * * *     www     %{_datadir}/%{name}/bin/collectstats.pl > /dev/null 2>&1
+0 0 * * *     www     %{_datadir}/%{name}/bin/whineatnews.pl > /dev/null 2>&1
+*/15 * * * *     www     %{_datadir}/%{name}/bin/whine.pl > /dev/null 2>&1
 EOF
 
 cat > README.mdv <<EOF
@@ -188,7 +188,7 @@ EOF
 %config(noreplace) %{_sysconfdir}/cron.d/%{name}
 %{_datadir}/%{name}
 %{_sysconfdir}/%{name}
-%attr(-,apache,apache) %{_localstatedir}/lib/%{name}
+%attr(-,www,www) %{_localstatedir}/lib/%{name}
 %exclude %{_datadir}/%{name}/bin/jb2bz.py
 %exclude %{_datadir}/%{name}/bin/mysqld-watcher.pl
 %exclude %{_datadir}/%{name}/bin/sendbugmail.pl
